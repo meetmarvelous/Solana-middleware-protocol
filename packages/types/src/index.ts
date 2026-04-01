@@ -23,3 +23,11 @@ export type RpcEndpoint = {
     latency?: number
     successRate?: number
 }
+export type Signature = string
+export type TxStatus = "pending" | "confirmed" | "failed"
+export type context = {
+    attempts: number
+    maxRetries: number
+}
+export type message = string
+export type meta = Record<string, any>
