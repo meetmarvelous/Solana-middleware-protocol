@@ -18,3 +18,8 @@ export type SimulationResult = {
     error?: string
     logs: string[]
 }
+export type RpcEndpoint = {
+    url: string
+    latency?: number
+    successRate?: number
+}
