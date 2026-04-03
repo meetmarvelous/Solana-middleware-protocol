@@ -3,7 +3,7 @@ import { simulateTx } from "@repo/simulator/simulate"
 import { sendTx } from "@repo/rpc-client/send"
 import { getTxStatus } from "@repo/rpc-client/status"
 import { retryTx } from "@repo/retry-engine/retry"
-
+import { optimizeFee } from "@repo/fee-optimizer/optimize"
 export const HandleTx = async (req: TxRequest): Promise<TxResponse> => {
     console.log("Called HandleTx");
     const serialisedTransaction = req.transaction;
@@ -23,7 +23,8 @@ export const HandleTx = async (req: TxRequest): Promise<TxResponse> => {
     }
 
     let currentTx = simulate_result.transaction;
-    let signature = await sendTx(currentTx);
+    const optimizedTxWithFee = await optimizeFee(currentTx);
+    let signature = await sendTx(optimizedTxWithFee);
     let attempts = 1;
     const maxRetries = req.options?.maxRetries ?? 3;
 

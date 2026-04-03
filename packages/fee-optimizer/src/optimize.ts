@@ -1,5 +1,6 @@
 import type { DeserializedTx } from "@repo/types/index";
-import { ComputeBudgetProgram, Connection, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { Connection } from "@solana/web3.js";
+import { applyPriorityFee } from "@repo/tx-builder/builder";
 
 export async function optimizeFee(tx: DeserializedTx): Promise<DeserializedTx> {
     const connection = new Connection("https://api.devnet.solana.com", "confirmed");
@@ -13,9 +14,6 @@ export async function optimizeFee(tx: DeserializedTx): Promise<DeserializedTx> {
         const half = Math.floor(fees.length / 2);
         fees.length % 2 ? baseFee = fees[half]! : baseFee = (fees[half - 1]! + fees[half]!) / 2;
     }
-    const feeIx = ComputeBudgetProgram.setComputeUnitPrice({ microLamports: baseFee });
-    const message = TransactionMessage.decompile(tx.message);
-    message.instructions.unshift(feeIx);
-    const newTxWithFee = new VersionedTransaction(message.compileToV0Message());
+    const newTxWithFee = applyPriorityFee(tx, baseFee);
     return newTxWithFee;
 }
