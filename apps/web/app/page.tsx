@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, useScroll, useTransform, useInView, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
+import { CodeSnippetTabs } from "./components/CodeSnippetTabs";
 
 // ─── SVG Icons (monochrome, no emojis) ───────────────────────────────────────
 const Icons = {
@@ -551,45 +552,10 @@ function FeatureCard({ title, desc, tag, index }: { title: string; desc: string;
   );
 }
 
+
 // ─── Product Visualization Box ────────────────────────────────────────────────
-const vizSteps = [
-  { label: "Simulating transaction...", status: "running" },
-  { label: "Simulation passed ✓", status: "done" },
-  { label: "Optimizing fee (CU scan)...", status: "running" },
-  { label: "Fee: 0.000031 SOL (-42%) ✓", status: "done" },
-  { label: "Routing to fastest RPC...", status: "running" },
-  { label: "ny1.helius-rpc.com (12ms) ✓", status: "done" },
-  { label: "Sending...", status: "running" },
-  { label: "Attempt 1 timeout — retrying", status: "warn" },
-  { label: "Confirmed in slot 312,847,291 ✓", status: "done" },
-];
-
 function ProductVizBox() {
-  const [step, setStep] = useState(0);
-  const [running, setRunning] = useState(false);
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
-
-  const runSeq = useCallback(() => {
-    setStep(0); setRunning(true);
-    const delays = [0, 820, 1600, 2450, 3200, 4000, 4800, 5600, 6500];
-    delays.forEach((d, i) => setTimeout(() => setStep(i + 1), d));
-    setTimeout(() => setRunning(false), 7300);
-  }, []);
-
-  useEffect(() => { if (inView && !running && step === 0) runSeq(); }, [inView]);
-
-  const progress = Math.round((step / vizSteps.length) * 100);
-
-  const statusColor = (s: string) =>
-    s === "done" ? "bg-emerald-400 text-emerald-400" :
-      s === "warn" ? "bg-amber-400 text-amber-400" :
-        "bg-white/18 text-white/42";
-
-  const textColor = (s: string) =>
-    s === "done" ? "text-emerald-400" :
-      s === "warn" ? "text-amber-400" : "text-white/42";
-
   return (
     <section ref={ref} className="py-24 px-6">
       <div className="max-w-5xl mx-auto">
@@ -620,94 +586,9 @@ function ProductVizBox() {
             </div>
           </div>
 
-          {/* Right: animated card */}
+          {/* Right: code snippet */}
           <div className="relative">
-            <div className="rounded-2xl overflow-hidden"
-              style={{
-                background: "linear-gradient(160deg, #0e0e12 0%, #0a0a0d 100%)",
-                border: "1px solid rgba(255,255,255,0.07)",
-                boxShadow: "0 0 60px rgba(99,102,241,0.09), 0 32px 64px rgba(0,0,0,0.45)",
-              }}>
-              {/* Titlebar */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.045]"
-                style={{ background: "rgba(255,255,255,0.018)" }}>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]/75" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]/75" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#28c840]/75" />
-                </div>
-                <span className="font-mono text-[9.5px] text-white/18">sendra relay</span>
-                <button onClick={runSeq}
-                  className="font-mono text-[9.5px] text-white/18 hover:text-white/45 transition-colors duration-200">
-                  restart ↺
-                </button>
-              </div>
-
-              {/* Progress */}
-              <div className="px-4 pt-3 pb-2">
-                <div className="flex justify-between mb-1.5">
-                  <span className="font-mono text-[9px] text-white/18 uppercase tracking-widest">Progress</span>
-                  <span className="font-mono text-[9px] text-white/28">{progress}%</span>
-                </div>
-                <div className="h-0.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
-                  <motion.div className="h-full rounded-full"
-                    style={{ background: "linear-gradient(90deg, #6366f1, #8b5cf6)" }}
-                    animate={{ width: `${progress}%` }}
-                    transition={{ duration: 0.45, ease: "easeOut" }}
-                  />
-                </div>
-              </div>
-
-              {/* Logs */}
-              <div className="p-4 font-mono text-[11px] space-y-2 min-h-[232px]">
-                <AnimatePresence>
-                  {vizSteps.slice(0, step).map((s, i) => (
-                    <motion.div key={i} initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.22 }} className="flex items-center gap-2.5">
-                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${statusColor(s.status).split(" ")[0]}`} />
-                      <span className={textColor(s.status)}>{s.label}</span>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-                {running && step < vizSteps.length && (
-                  <div className="flex gap-1 pl-4 pt-0.5">
-                    {[0, 1, 2].map(i => (
-                      <motion.div key={i} className="w-1 h-1 rounded-full bg-white/16"
-                        animate={{ opacity: [0.16, 0.65, 0.16] }}
-                        transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                      />
-                    ))}
-                  </div>
-                )}
-                {step >= vizSteps.length && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}
-                    className="mt-4 pt-3.5 border-t border-white/[0.05] flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                    <span className="text-emerald-400/75 text-[11px]">Transaction landed successfully</span>
-                  </motion.div>
-                )}
-              </div>
-
-              {/* Stats footer */}
-              <div className="flex gap-7 px-4 py-3 border-t border-white/[0.04]"
-                style={{ background: "rgba(0,0,0,0.22)" }}>
-                {[
-                  ["Status", step >= vizSteps.length ? "Confirmed" : running ? "Relaying" : "Idle",
-                    step >= vizSteps.length ? "text-emerald-400" : "text-white/38"],
-                  ["Attempts", step >= 8 ? "2" : "1", "text-white/38"],
-                  ["Slot", step >= vizSteps.length ? "312,847,291" : "—", "text-white/38"],
-                ].map(([label, val, cls]) => (
-                  <div key={label as string}>
-                    <div className="text-[8px] text-white/18 uppercase tracking-widest font-mono">{label}</div>
-                    <div className={`text-[11px] font-mono font-medium mt-0.5 ${cls}`}>{val}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            {/* Card ambient glow */}
-            <div className="absolute inset-0 rounded-2xl -z-10 pointer-events-none"
-              style={{ boxShadow: "0 0 80px rgba(99,102,241,0.11)" }}
-            />
+            <CodeSnippetTabs />
           </div>
         </div>
       </div>
