@@ -1,13 +1,14 @@
-import type { SimulationResult, SerializedTx, RpcEndpoint } from "@repo/types/index"
+import type { SimulationResult, SerializedTx, RpcEndpoint, DeserializedTx, Signer } from "@repo/types/index"
 import {
     Connection,
     VersionedTransaction,
 } from "@solana/web3.js";
 
-export async function simulateTx(tx: SerializedTx, RPC_URL: RpcEndpoint): Promise<SimulationResult> {
+export async function SimulateTx(tx: DeserializedTx, RPC_URL: RpcEndpoint, signer: Signer): Promise<SimulationResult> {
     console.log(`Called simulateTx`);
     const connection = new Connection(`${RPC_URL.url}`, "confirmed");
-    const deserializedTx = VersionedTransaction.deserialize(tx);
+    const serializedTx = tx.serialize();
+    const deserializedTx = VersionedTransaction.deserialize(serializedTx);
     const res = await connection.simulateTransaction(deserializedTx);
     return {
         success: !res.value?.err,

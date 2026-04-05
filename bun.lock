@@ -115,6 +115,28 @@
         "typescript": "^5",
       },
     },
+    "packages/core": {
+      "name": "@repo/core",
+      "devDependencies": {
+        "@repo/config": "workspace:*",
+        "@repo/core": "workspace:*",
+        "@repo/eslint-config": "workspace:*",
+        "@repo/fee-optimizer": "workspace:*",
+        "@repo/logger": "workspace:*",
+        "@repo/retry-engine": "workspace:*",
+        "@repo/router": "workspace:*",
+        "@repo/rpc-client": "workspace:*",
+        "@repo/simulator": "workspace:*",
+        "@repo/tx-builder": "workspace:*",
+        "@repo/types": "workspace:*",
+        "@repo/typescript-config": "workspace:*",
+        "@repo/utils": "workspace:*",
+        "@types/bun": "latest",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
     "packages/eslint-config": {
       "name": "@repo/eslint-config",
       "version": "0.0.0",
@@ -190,6 +212,31 @@
         "@repo/typescript-config": "*",
         "@types/bun": "latest",
         "eslint": "^9.39.1",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
+    "packages/sdk": {
+      "name": "@repo/sdk",
+      "dependencies": {
+        "@solana/web3.js": "^1.98.4",
+      },
+      "devDependencies": {
+        "@repo/config": "workspace:*",
+        "@repo/core": "workspace:*",
+        "@repo/eslint-config": "workspace:*",
+        "@repo/fee-optimizer": "workspace:*",
+        "@repo/logger": "workspace:*",
+        "@repo/retry-engine": "workspace:*",
+        "@repo/router": "workspace:*",
+        "@repo/rpc-client": "workspace:*",
+        "@repo/simulator": "workspace:*",
+        "@repo/tx-builder": "workspace:*",
+        "@repo/types": "workspace:*",
+        "@repo/typescript-config": "workspace:*",
+        "@repo/utils": "workspace:*",
+        "@types/bun": "latest",
       },
       "peerDependencies": {
         "typescript": "^5",
@@ -393,6 +440,8 @@
 
     "@repo/config": ["@repo/config@workspace:packages/config"],
 
+    "@repo/core": ["@repo/core@workspace:packages/core"],
+
     "@repo/eslint-config": ["@repo/eslint-config@workspace:packages/eslint-config"],
 
     "@repo/fee-optimizer": ["@repo/fee-optimizer@workspace:packages/fee-optimizer"],
@@ -404,6 +453,8 @@
     "@repo/router": ["@repo/router@workspace:packages/router"],
 
     "@repo/rpc-client": ["@repo/rpc-client@workspace:packages/rpc-client"],
+
+    "@repo/sdk": ["@repo/sdk@workspace:packages/sdk"],
 
     "@repo/simulator": ["@repo/simulator@workspace:packages/simulator"],
 

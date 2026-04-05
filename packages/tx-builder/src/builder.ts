@@ -1,11 +1,21 @@
-import type { DeserializedTx, RpcEndpoint } from "@repo/types/index";
-import { Connection } from "@solana/web3.js";
-import { optimizeFee } from "@repo/fee-optimizer/optimize";
+import type { DeserializedTx, RpcEndpoint, SendraParams, Signer } from "@repo/types/index";
+import { Connection, PublicKey, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 
-export async function rebuildTx(tx: DeserializedTx, RPC_URL: RpcEndpoint): Promise<DeserializedTx> {
-    console.log("Called rebuildTx");
-    const connection = new Connection(`${RPC_URL.url}`, "confirmed");
-    const { blockhash } = await connection.getLatestBlockhash()
-    tx.message.recentBlockhash = blockhash;
+export async function BuildTx(rpc: RpcEndpoint, signer: Signer, params: SendraParams): Promise<DeserializedTx> {
+    const connection = new Connection(`${rpc.url}`, "confirmed");
+    const senderAdd = new PublicKey(signer.publicKey);
+    const receiverAdd = new PublicKey(params.receiver);
+    const { blockhash } = await connection.getLatestBlockhash();
+    const instruction = SystemProgram.transfer({
+        fromPubkey: senderAdd,
+        toPubkey: receiverAdd,
+        lamports: params.amount
+    })
+    const message = new TransactionMessage({
+        payerKey: senderAdd,
+        instructions: [instruction],
+        recentBlockhash: blockhash
+    }).compileToV0Message();
+    const tx = new VersionedTransaction(message);
     return tx;
 }

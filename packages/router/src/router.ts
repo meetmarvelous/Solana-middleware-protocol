@@ -64,20 +64,21 @@ export async function selectRpc(): Promise<RpcEndpoint> {
         { rpc: SOLANA_QUICKNODE_RPC_URL, timeTaken: timeTakenForQuicknode, success: succesForQuicknode }
     ];
 
-    latency
+    const valid = latency
         .filter((e) => e.success === true)
         .sort((a, b) => a.timeTaken - b.timeTaken);
 
-    if (latency.length === 0 || latency === undefined) {
+    if (valid.length === 0) {
         return {
             url: "No RPC Available",
             latency: 0,
             successRate: false
         };
     }
+
     return {
-        url: latency[0]!.rpc,
-        latency: latency[0]!.timeTaken,
-        successRate: latency[0]!.success
+        url: valid[0]!.rpc,
+        latency: valid[0]!.timeTaken,
+        successRate: valid[0]!.success
     };
 }

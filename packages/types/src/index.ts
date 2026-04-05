@@ -1,4 +1,4 @@
-import { VersionedTransaction } from "@solana/web3.js"
+import { PublicKey, Transaction, VersionedTransaction } from "@solana/web3.js"
 
 export type SerializedTx = Uint8Array
 export type TxRequest = {
@@ -40,3 +40,23 @@ export type OptimizedTx = {
     transaction: DeserializedTx
     fee: number
 }
+export type Signer = {
+    publicKey: PublicKey;
+    signTransaction(tx: DeserializedTx): Promise<DeserializedTx>;
+};
+
+export type SendraParams = {
+    receiver: PublicKey;
+    amount: number;
+};
+
+export type SendraOptions = {
+    maxRetries: number;
+};
+
+export type SendraResult = {
+    signature: string;
+    status: "confirmed" | "failed";
+    attempts: number;
+    error?: string;
+};
