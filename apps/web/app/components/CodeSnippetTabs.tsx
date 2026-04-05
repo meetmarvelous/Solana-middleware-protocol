@@ -157,7 +157,7 @@ export function CodeSnippetTabs() {
       <div
         className="rounded-2xl overflow-hidden"
         style={{
-          background: "linear-gradient(160deg, #0d0d12 0%, #0a0a0f 100%)",
+          backgroundColor: "#000000",
           border: "1px solid rgba(255,255,255,0.07)",
         }}
       >
@@ -257,59 +257,87 @@ export function CodeSnippetTabs() {
 
         </div>
 
-        {/* ── Code block ── */}
-        <div className="relative overflow-hidden">
+        {/* ── Code block & Comments ── */}
+        <div className="flex flex-col md:flex-row relative">
           {/* Top glow edge */}
           <div
-            className="absolute top-0 left-0 right-0 h-px"
+            className="absolute top-0 left-0 right-0 h-px z-10"
             style={{ background: "linear-gradient(90deg, transparent, rgba(99,102,241,0.15), transparent)" }}
           />
 
-          {/* Line number gutter */}
-          <div
-            className="absolute top-0 bottom-0 left-0 w-10"
-            style={{ background: "rgba(0,0,0,0.18)", borderRight: "1px solid rgba(255,255,255,0.03)" }}
-          />
+          {/* Left: Code Editor */}
+          <div className="relative overflow-hidden w-full md:w-[50%] border-r border-white/[0.04]">
+            {/* Line number gutter */}
+            <div
+              className="absolute top-0 bottom-0 left-0 w-10"
+              style={{ background: "rgba(0,0,0,0.18)", borderRight: "1px solid rgba(255,255,255,0.03)" }}
+            />
 
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={active}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.18, ease: "easeInOut" }}
-              className="min-h-[260px]"
-            >
-              <SyntaxHighlighter
-                language={activeTab.lang}
-                style={customTheme}
-                showLineNumbers
-                lineNumberStyle={{
-                  display: "inline-block",
-                  color: "rgba(255,255,255,0.18)",
-                  fontSize: "10px",
-                  minWidth: "40px",
-                  paddingRight: "12px",
-                  paddingLeft: "4px",
-                  textAlign: "right",
-                  userSelect: "none",
-                }}
-                customStyle={{
-                  margin: 0,
-                  padding: "20px 20px 24px 0",
-                  background: "transparent",
-                  overflow: "auto",
-                }}
-                codeTagProps={{
-                  style: {
-                    fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace",
-                  },
-                }}
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={active}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.18, ease: "easeInOut" }}
+                className="h-[600px] overflow-hidden"
               >
-                {activeTab.code}
-              </SyntaxHighlighter>
-            </motion.div>
-          </AnimatePresence>
+                <SyntaxHighlighter
+                  language={activeTab.lang}
+                  style={customTheme}
+                  showLineNumbers
+                  lineNumberStyle={{
+                    display: "inline-block",
+                    color: "rgba(255,255,255,0.18)",
+                    fontSize: "10px",
+                    minWidth: "40px",
+                    paddingRight: "12px",
+                    paddingLeft: "4px",
+                    textAlign: "right",
+                    userSelect: "none",
+                  }}
+                  customStyle={{
+                    margin: 0,
+                    padding: "20px 20px 24px 0",
+                    background: "transparent",
+                    overflow: "auto",
+                  }}
+                  codeTagProps={{
+                    style: {
+                      fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace",
+                    },
+                  }}
+                >
+                  {activeTab.code}
+                </SyntaxHighlighter>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Right: Comments */}
+          <div className="w-full md:w-[50%] p-8 bg-transparent border-l border-white/[0.02] text-[#6b7280] font-mono text-[12px] leading-relaxed h-[600px] overflow-hidden">
+            <div className="mb-6">
+              <span className="text-[#a5b4fc]"># Sendra</span>
+              <br />
+              <br />
+              # Sendra intercepts your transactions before they hit the network.
+              <br />
+              # It simulates, optimizes, routes — and if anything goes wrong, retries.
+              <br />
+              # Automatically. Every time.
+              <br />
+              <br />
+              <br />
+              <span className="text-[#a5b4fc]"># Integration & Features</span>
+              <br />
+              <br />
+              # - Zero code changes to your app
+              <br />
+              # - Sub-100ms overhead per transaction
+              <br />
+              # - Works with any Solana SDK
+            </div>
+          </div>
         </div>
 
         {/* ── Footer ── */}

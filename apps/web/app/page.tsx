@@ -762,7 +762,7 @@ export default function SendraPage() {
             <TiltLogo />
           </div>
           <div className="hidden md:flex items-center justify-center gap-8 text-[13px] text-white/32">
-            {([ ["#how", "How it works"], ["#features", "Features"], ["#arch", "Architecture"], ["/demo", "Demo →"] ] as [string, string][]).map(([href, label]) => (
+            {([["#how", "How it works"], ["#features", "Features"], ["#arch", "Architecture"], ["/demo", "Demo →"]] as [string, string][]).map(([href, label]) => (
               href.startsWith("/") ? (
                 <Link key={href} href={href}
                   className="relative hover:text-white/72 transition-colors duration-200 group">
@@ -786,24 +786,34 @@ export default function SendraPage() {
       </header>
 
       {/* ── Hero ── */}
-      <section ref={heroRef} className="relative z-10 min-h-[92vh] flex flex-col items-center justify-center text-center px-6 pt-8 pb-28 overflow-hidden">
-        <HeroBackground />
+      <section ref={heroRef} className="relative z-10 w-full pt-[108px] px-[56px] pb-0 shadow-2xl" style={{ clipPath: 'inset(0 0 5% 0 round 0px 0px 40px 40px)' }}>
+        <div
+          className="absolute top-0 left-0 right-0 h-[95%] z-[-1] pointer-events-none opacity-90 overflow-hidden rounded-b-[40px]"
+          style={{
+            backgroundImage: "url('/hero_bg.jpg')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'top',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
 
-        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10">
+        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10 max-w-[1313px] mx-auto flex flex-col items-center text-center">
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-10"
-            style={{ border: "1px solid rgba(99,102,241,0.2)", background: "rgba(99,102,241,0.07)" }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md mb-8"
+            style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}
           >
             <motion.span
               animate={{ opacity: [0.5, 1, 0.5] }}
               transition={{ duration: 2.2, repeat: Infinity }}
-              className="w-1.5 h-1.5 rounded-full bg-indigo-400"
-            />
-            <span className="text-[11px] font-mono text-indigo-300/72 tracking-[0.14em] uppercase">Built for Solana</span>
+              className="w-4 h-4 rounded bg-[#6366f1] flex items-center justify-center font-bold text-white text-[10px]"
+            >
+              S
+            </motion.span>
+            <span className="text-[12px] font-sans text-white/70 tracking-wide">Built for <strong className="text-white/90 font-semibold">Solana</strong></span>
           </motion.div>
 
           {/* H1 */}
@@ -811,14 +821,9 @@ export default function SendraPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.75, delay: 0.07, ease: [0.21, 0.47, 0.32, 0.98] }}
-            className="text-[60px] md:text-[92px] font-extralight leading-[1.03] tracking-tight max-w-4xl mx-auto mb-7"
+            className="text-[60px] md:text-[84px] font-semibold leading-[1.05] tracking-tight max-w-4xl mx-auto mb-6 text-white"
           >
-            Transactions{" "}
-            <span className="text-transparent bg-clip-text"
-              style={{ backgroundImage: "linear-gradient(130deg, #c7d2fe 0%, #a5b4fc 40%, #818cf8 70%, #6366f1 100%)" }}>
-              that don't
-            </span>
-            <br />fail.
+            Transactions that don't fail.
           </motion.h1>
 
           {/* Subtext */}
@@ -826,7 +831,7 @@ export default function SendraPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.17 }}
-            className="text-white/36 text-[17px] md:text-[18px] max-w-[480px] mx-auto leading-relaxed mb-11"
+            className="text-white/60 text-[18px] md:text-[20px] max-w-[700px] mx-auto leading-relaxed mb-10"
           >
             Sendra ensures every Solana transaction lands — with simulation, smart routing, and automatic retries.
           </motion.p>
@@ -836,52 +841,28 @@ export default function SendraPage() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.27 }}
-            className="flex flex-col sm:flex-row items-center gap-2.5 justify-center"
+            className="flex flex-col sm:flex-row items-center gap-4 justify-center mb-20"
           >
             <Link href="/demo">
-              <PrimaryButton>
-                Try Demo
-                <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                  <path d="M2 5.5h7M5.5 2l3.5 3.5L5.5 9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </PrimaryButton>
+              <button className="px-6 py-3 bg-white text-black font-semibold text-[13px] tracking-wide rounded hover:bg-white/90 transition-colors uppercase">
+                START FOR FREE
+              </button>
             </Link>
-            <GhostButton>
-              Read the docs
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <path d="M1.5 8.5l7-7M5 1.5h4v4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </GhostButton>
+            <button className="px-6 py-3 bg-white/5 text-white/90 font-semibold text-[13px] tracking-wide rounded hover:bg-white/10 border border-white/10 transition-colors uppercase">
+              BOOK A DEMO
+            </button>
           </motion.div>
 
-          {/* Stats */}
+          {/* New Code Snippet in Hero */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.65 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-10 sm:gap-20 mt-24"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="w-full text-left"
           >
-            {[["99.97%", "delivery rate"], ["< 1.2s", "avg confirmation"], ["42%", "lower fees"]].map(([val, label]) => (
-              <div key={label} className="text-center">
-                <div className="text-[26px] font-light text-white/86 tabular-nums">{val}</div>
-                <div className="text-[9.5px] text-white/20 mt-1.5 uppercase tracking-[0.2em] font-mono">{label}</div>
-              </div>
-            ))}
+            <CodeSnippetTabs />
           </motion.div>
-        </motion.div>
 
-        {/* Scroll cue */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.7 }}
-          className="absolute bottom-8 flex flex-col items-center gap-1.5"
-        >
-          <motion.div animate={{ y: [0, 4, 0] }} transition={{ duration: 2.2, repeat: Infinity }}
-            className="flex flex-col items-center gap-1.5">
-            <span className="text-[8.5px] text-white/16 font-mono uppercase tracking-widest">scroll</span>
-            <div className="w-px h-6" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.16), transparent)" }} />
-          </motion.div>
         </motion.div>
       </section>
 
@@ -891,11 +872,7 @@ export default function SendraPage() {
         <ScrollLitText />
       </section>
 
-      {/* ── Product Viz ── */}
-      <section className="relative z-10">
-        <Divider />
-        <ProductVizBox />
-      </section>
+
 
       {/* ── How it works ── */}
       <section id="how" className="relative z-10">
