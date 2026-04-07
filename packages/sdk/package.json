@@ -2,6 +2,10 @@
   "name": "@repo/sdk",
   "module": "src/index.ts",
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "@repo/core": "workspace:*",

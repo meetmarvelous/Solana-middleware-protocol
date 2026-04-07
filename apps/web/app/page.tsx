@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { motion, useScroll, useTransform, useInView, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import Link from "next/link";
 import { CodeSnippetTabs } from "./components/CodeSnippetTabs";
 import { ArchitectureDiagram } from "./components/ArchitectureDiagram";
 import { MetricsCards } from "./components/MetricsCards";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
-// ─── SVG Icons (monochrome, no emojis) ───────────────────────────────────────
 const Icons = {
   Simulate: () => (
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
@@ -77,7 +78,6 @@ const Icons = {
   ),
 };
 
-// ─── Premium Buttons ──────────────────────────────────────────────────────────
 
 const DECODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
 
@@ -91,7 +91,6 @@ function DecoderText({ text, isHovered }: { text: string; isHovered: boolean }) 
     }
 
     let iteration = 0;
-    // Lower divisor or minimum value here reduces the left-to-right reading speed
     const charsPerTick = Math.max(text.length / 20, 0.2);
     let interval: ReturnType<typeof setInterval>;
 
@@ -181,6 +180,24 @@ function PrimaryButton({ children, onClick }: { children: React.ReactNode; onCli
   );
 }
 
+function WalletButton() {
+  const { connected, publicKey, disconnect } = useWallet();
+  const { setVisible } = useWalletModal();
+
+  const base58 = useMemo(() => publicKey?.toBase58(), [publicKey]);
+  const content = useMemo(() => {
+    if (!connected) return "Connect wallet";
+    if (!base58) return "Connected";
+    return base58.slice(0, 4) + '..' + base58.slice(-4);
+  }, [connected, base58]);
+
+  return (
+    <PrimaryButton onClick={connected ? () => disconnect() : () => setVisible(true)}>
+      {content}
+    </PrimaryButton>
+  );
+}
+
 function GhostButton({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
   return (
     <motion.button
@@ -212,7 +229,6 @@ function GhostButton({ children, onClick }: { children: React.ReactNode; onClick
   );
 }
 
-// ─── Tilt Logo ────────────────────────────────────────────────────────────────
 function TiltLogo() {
   const ref = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
@@ -239,7 +255,6 @@ function TiltLogo() {
   );
 }
 
-// ─── Hero animated background ─────────────────────────────────────────────────
 function HeroBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -321,7 +336,6 @@ function HeroBackground() {
   );
 }
 
-// ─── Page background ──────────────────────────────────────────────────────────
 function PageBackground() {
   return (
     <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
@@ -351,7 +365,6 @@ function PageBackground() {
   );
 }
 
-// ─── Divider ──────────────────────────────────────────────────────────────────
 function Divider() {
   return (
     <div className="h-px mx-6 md:mx-auto md:max-w-5xl"
@@ -360,18 +373,17 @@ function Divider() {
   );
 }
 
-// ─── Fixed Scroll-Lit Text ────────────────────────────────────────────────────
 function ScrollLitText() {
   const ref = useRef<HTMLDivElement>(null);
-  // KEY FIX: By tracking from "start 85%" to "start 25%", the progress goes from 0 to 1
-  // purely based on where the top of the section is in the viewport, ignoring the total height.
-  // This ensures the text fully highlights perfectly as it scrolls into the top half of the screen.
+
+
+
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ["start 75%", "start 25%"],
+    offset: ["start 85%", "start -10%"],
   });
 
-  const words = "Most transactions fail silently. Users retry. Developers guess. Sendra fixes execution at the protocol layer.".split(" ");
+  const words = "Most transactions fail silently. Users retry. Developers guess. Traditional infrastructure leaves execution unpredictable. Sendra fixes execution at the protocol layer ensuring transactions land reliably, every time.".split(" ");
   const n = words.length;
 
   return (
@@ -383,7 +395,7 @@ function ScrollLitText() {
       </div>
       <div className="flex flex-wrap gap-x-[14px] gap-y-3 justify-center mb-16">
         {words.map((word, i) => {
-          // Spread words across 0.0 → 1.0 of the new, highly targeted scroll progress window.
+
           const BAND_START = 0.0;
           const BAND_END = 1.0;
           const span = BAND_END - BAND_START;
@@ -435,19 +447,19 @@ function ScrollWord({ word, progress, start, end }: {
 }) {
   const range = Math.max(end - start, 0.001);
 
-  // All three animations computed from scroll progress in [start, end]
+
   const opacity = useTransform(progress, [start, end], [0.15, 1]);
 
-  // Grey → off-white with very subtle purple tint (feels highlighted, not orange)
+
   const color = useTransform(progress, [start, end], ["#383844", "#ece8ff"]);
 
-  // Combined blur + drop-shadow glow: blurry/dim when not yet reached → sharp + glowing
+
   const combinedFilter = useTransform(progress, (v: number) => {
     const t = Math.max(0, Math.min(1, (v - start) / range));
     const blur = ((1 - t) * 5).toFixed(2);
     const gAlpha = (t * 0.32).toFixed(2);
     const gSize = (t * 10).toFixed(1);
-    // Only apply glow when mostly highlighted to keep it subtle
+
     return t > 0.3
       ? `blur(${blur}px) drop-shadow(0 0 ${gSize}px rgba(139,92,246,${gAlpha}))`
       : `blur(${blur}px)`;
@@ -463,7 +475,6 @@ function ScrollWord({ word, progress, start, end }: {
   );
 }
 
-// ─── Pipeline Step (glass cards + SVG icons) ──────────────────────────────────
 const pipelineIcons: React.FC[] = [Icons.Simulate, Icons.Optimize, Icons.Route, Icons.Send, Icons.Retry];
 
 function PipelineStep({ label, desc, index }: { label: string; desc: string; index: number }) {
@@ -527,7 +538,6 @@ function PipelineStep({ label, desc, index }: { label: string; desc: string; ind
   );
 }
 
-// ─── Feature Card (glass) ─────────────────────────────────────────────────────
 const featureIcons: React.FC[] = [Icons.SimulationFeat, Icons.FeeFeat, Icons.RouteFeat, Icons.RetryFeat];
 
 function FeatureCard({ title, desc, tag, index }: { title: string; desc: string; tag: string; index: number }) {
@@ -588,7 +598,6 @@ function FeatureCard({ title, desc, tag, index }: { title: string; desc: string;
 }
 
 
-// ─── Product Visualization Box ────────────────────────────────────────────────
 function ProductVizBox() {
   const ref = useRef(null);
   return (
@@ -631,7 +640,6 @@ function ProductVizBox() {
   );
 }
 
-// ─── Demo Terminal ────────────────────────────────────────────────────────────
 const demoLogs = [
   { type: "info", text: "Initializing transaction simulation...", delay: 0 },
   { type: "success", text: "Simulation passed — no revert detected", delay: 900 },
@@ -754,7 +762,6 @@ function DemoTerminal() {
   );
 }
 
-// ─── Hero Custom Buttons ────────────────────────────────────────────────────────
 function HeroPrimaryButton({ children }: { children: string }) {
   const [isHovered, setIsHovered] = useState(false);
   return (
@@ -793,7 +800,6 @@ function HeroGhostButton({ children }: { children: string }) {
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function SendraPage() {
   const heroRef = useRef(null);
   const { scrollYProgress: heroScroll } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
@@ -820,7 +826,6 @@ export default function SendraPage() {
       style={{ background: "linear-gradient(180deg, #06060a 0%, #080810 25%, #07070c 55%, #060608 100%)" }}>
       <PageBackground />
 
-      {/* ── Nav ── */}
       <header className="sticky top-0 z-50 w-full"
         style={{
           backdropFilter: "blur(20px) saturate(1.4)",
@@ -852,6 +857,7 @@ export default function SendraPage() {
           <div className="flex flex-1 items-center justify-end gap-2">
             <GhostButton>Read docs</GhostButton>
             <Link href="/demo"><PrimaryButton>Try Demo</PrimaryButton></Link>
+            <WalletButton />
           </div>
         </nav>
       </header>

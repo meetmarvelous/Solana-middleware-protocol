@@ -3,15 +3,14 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
-// Main pipeline nodes
 const mainNodes = [
-  { id: "user",   label: "Your App",      sub: "SDK / REST",           accent: "rgba(255,255,255,0.08)" },
-  { id: "api",    label: "Sendra API",    sub: "Entry point",          accent: "rgba(99,102,241,0.22)", wide: true },
-  { id: "sim",    label: "Simulator",     sub: "Pre-flight check",     accent: "rgba(99,102,241,0.12)" },
-  { id: "fee",    label: "Fee Optimizer", sub: "Dynamic compute unit", accent: "rgba(99,102,241,0.12)" },
-  { id: "router", label: "RPC Router",    sub: "Latency-ranked",       accent: "rgba(99,102,241,0.12)" },
-  { id: "rpc",    label: "RPC Node",      sub: "Helius / QuickNode",   accent: "rgba(52,211,153,0.13)", hasRetry: true },
-  { id: "chain",  label: "Solana",        sub: "On-chain",             accent: "rgba(139,92,246,0.18)" },
+  { id: "user", label: "Your App", sub: "SDK / REST", accent: "rgba(255,255,255,0.08)" },
+  { id: "api", label: "Sendra API", sub: "Entry point", accent: "rgba(99,102,241,0.22)", wide: true },
+  { id: "sim", label: "Simulator", sub: "Pre-flight check", accent: "rgba(99,102,241,0.12)" },
+  { id: "fee", label: "Fee Optimizer", sub: "Dynamic compute unit", accent: "rgba(99,102,241,0.12)" },
+  { id: "router", label: "RPC Router", sub: "Latency-ranked", accent: "rgba(99,102,241,0.12)" },
+  { id: "rpc", label: "RPC Node", sub: "Helius / QuickNode", accent: "rgba(52,211,153,0.13)", hasRetry: true },
+  { id: "chain", label: "Solana", sub: "On-chain", accent: "rgba(139,92,246,0.18)" },
 ];
 
 export function ArchitectureDiagram() {

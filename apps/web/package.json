@@ -12,8 +12,13 @@
   },
   "dependencies": {
     "@repo/ui": "*",
+    "@solana/wallet-adapter-base": "^0.9.27",
+    "@solana/wallet-adapter-react": "^0.15.39",
+    "@solana/wallet-adapter-react-ui": "^0.9.39",
+    "@solana/wallet-adapter-wallets": "^0.19.38",
     "@tailwindcss/postcss": "^4.2.2",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "@repo/sdk": "workspace:*",
     "framer-motion": "^12.38.0",
     "next": "16.2.0",
     "react": "^19.2.0",

@@ -12,15 +12,15 @@ export async function SendWithReliability(params: SendraParams, signer: Signer, 
     const optimisedTx = await optimizeFee(tx, rpc);
     const simulateResult = await SimulateTx(optimisedTx.transaction, rpc, signer);
     if (!simulateResult.success) {
-        return { success: false, error: simulateResult.error };
+        return { success: false, error: simulateResult.error, attempts: 1 };
     }
     const signedTx = await signer.signTransaction(simulateResult.transaction);
     const signature = await SendTx(signedTx, rpc);
     const result = await ConfirmTx(rpc, signature);
     if (result.success) {
-        return result;
+        return { ...result, attempts: 1 };
     }
-    let attempt = 0;
+    let attempt = 1;
     let lastFee = optimisedTx.fee;
 
     while (attempt < options.maxRetries) {
@@ -32,21 +32,22 @@ export async function SendWithReliability(params: SendraParams, signer: Signer, 
 
         const sim = await SimulateTx(reOptimized.transaction, rpc, signer);
         if (!sim.success) {
-            return { success: false, error: sim.error };
+            return { success: false, error: sim.error, attempts: attempt + 1 };
         }
 
         const signedTx = await signer.signTransaction(sim.transaction);
         const signature = await SendTx(signedTx, rpc);
-        const result = await ConfirmTx(rpc, signature);
+        const res = await ConfirmTx(rpc, signature);
 
-        if (result.success) {
-            return result;
+        if (res.success) {
+            return { ...res, attempts: attempt + 1 };
         }
 
         attempt++;
     }
     return {
         success: false,
-        error: "Max retries reached"
+        error: "Max retries reached",
+        attempts: attempt
     };
 }

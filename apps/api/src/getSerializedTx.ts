@@ -13,7 +13,6 @@ import nacl from "tweetnacl";
 (async () => {
     const connection = new Connection("https://api.devnet.solana.com", "confirmed");
 
-    // fresh wallet (simple + reliable)
     const mnemonic = "arm habit roast ski analyst soccer birth axis improve private place bench";
     const seed = await bip39.mnemonicToSeed(mnemonic);
     const derived = derivePath("m/44'/501'/0'/0'", seed.toString("hex")).key;

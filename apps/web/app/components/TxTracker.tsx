@@ -17,7 +17,6 @@ async function fetchTxStatus(signature: string): Promise<TxStatus> {
     if (!res.ok) throw new Error("API error");
     return await res.json();
   } catch {
-    // Mock response for demo
     await new Promise((r) => setTimeout(r, 1200));
     const mocked: TxStatus[] = [
       { signature, status: "finalized", confirmations: 31, slot: 312847291, err: null },
