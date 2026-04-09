@@ -60,3 +60,9 @@ export type SendraResult = {
     attempts: number;
     error?: string;
 };
+export type SendraLog = {
+    step: string
+    message: string
+    rpc?: string
+    attempt?: number
+}

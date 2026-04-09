@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey, Connection, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { SendWithReliability } from "@repo/sdk";
 
 // --- Icons ---
@@ -127,6 +127,18 @@ export default function DemoPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [logs, setLogs] = useState<any[]>([]);
+  const [sdkLogs, setSdkLogs] = useState<any[]>([]);
+  const [isSendraTx, setIsSendraTx] = useState(false);
+
+  const playLogs = (logsToPlay: any[]) => {
+    let i = 0;
+    setSdkLogs([]);
+    const interval = setInterval(() => {
+      setSdkLogs(prev => [...prev, logsToPlay[i]]);
+      i++;
+      if (i >= logsToPlay.length) clearInterval(interval);
+    }, 400);
+  };
 
   const pushLog = (type: "info" | "success" | "error" | "warn", message: string) => {
     const time = new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -146,6 +158,8 @@ export default function DemoPage() {
     setLoading(true);
     setResult(null);
     setLogs([]);
+    setSdkLogs([]);
+    setIsSendraTx(true);
     pushLog("info", "🚀 Initializing Sendra reliability layer...");
 
     try {
@@ -154,17 +168,95 @@ export default function DemoPage() {
         { receiver: new PublicKey(receiver), amount: Number(amount) },
         signer,
         { maxRetries: 3 }
-      );
+      ) as any;
 
       if (res.success) {
         setResult(res);
         pushLog("success", `Landed in slot! Sig: ${res.signature?.slice(0, 8)}...`);
+        if (res.logs) playLogs(res.logs);
       } else {
         pushLog("error", `Failed: ${res.error}`);
         setResult(res);
+        if (res.logs) playLogs(res.logs);
       }
     } catch (e: any) {
       pushLog("error", `Fatal: ${e.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNormalSend = async () => {
+    if (!connected || !publicKey || !signTransaction) {
+      pushLog("error", "Wallet not connected");
+      return;
+    }
+    if (!receiver || !amount) {
+      pushLog("error", "Details missing");
+      return;
+    }
+
+    setLoading(true);
+    setResult(null);
+    setLogs([]);
+    setSdkLogs([]);
+    setIsSendraTx(false);
+    pushLog("info", "🚀 Initializing Standard Solana Transaction...");
+
+    try {
+      const rpcUrl = "https://api.devnet.solana.com";
+      const connection = new Connection(rpcUrl, "confirmed");
+      
+      const senderAdd = publicKey;
+      const receiverAdd = new PublicKey(receiver);
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+      
+      const instruction = SystemProgram.transfer({
+        fromPubkey: senderAdd,
+        toPubkey: receiverAdd,
+        lamports: Number(amount)
+      });
+      
+      const message = new TransactionMessage({
+        payerKey: senderAdd,
+        instructions: [instruction],
+        recentBlockhash: blockhash
+      }).compileToV0Message();
+      const tx = new VersionedTransaction(message);
+
+      const initialLogs = [
+        { step: "SELECTED_RPC", message: "Standard Devnet RPC selected", rpc: rpcUrl },
+        { step: "BUILD_TX", message: "Built Transaction" },
+      ];
+      setSdkLogs(initialLogs);
+
+      pushLog("info", "Requesting signature...");
+      const signedTx = await signTransaction(tx);
+      setSdkLogs(prev => [...prev, { step: "SIGN_TX", message: "Signed Transaction" }]);
+
+      pushLog("info", "Sending transaction...");
+      const signature = await connection.sendTransaction(signedTx);
+      setSdkLogs(prev => [...prev, { step: "SEND_TX", message: "Sent Transaction", rpc: rpcUrl, attempt: 1 }]);
+
+      pushLog("info", "Waiting for confirmation...");
+      const confirmation = await connection.confirmTransaction({
+        signature,
+        blockhash,
+        lastValidBlockHeight
+      }, "confirmed");
+
+      if (confirmation.value.err) {
+        throw new Error(confirmation.value.err.toString());
+      }
+
+      setResult({ success: true, signature, attempts: 1 });
+      pushLog("success", `Landed in slot! Sig: ${signature.slice(0, 8)}...`);
+      setSdkLogs(prev => [...prev, { step: "CONFIRM_TX", message: "Confirmed Transaction: Success" }]);
+
+    } catch (e: any) {
+      pushLog("error", `Failed: ${e.message}`);
+      setResult({ success: false, error: e.message, attempts: 1 });
+      setSdkLogs(prev => [...prev, { step: "FAIL_TX", message: `Transaction Failed: ${e.message}` }]);
     } finally {
       setLoading(false);
     }
@@ -231,9 +323,18 @@ export default function DemoPage() {
                   Connect Wallet to Send
                 </PrimaryButton>
               ) : (
-                <PrimaryButton onClick={handleSend} disabled={loading}>
-                  {loading ? "Relaying Transaction..." : "Send Transaction →"}
-                </PrimaryButton>
+                <div className="grid grid-cols-2 gap-4">
+                  <button 
+                    onClick={handleNormalSend} 
+                    disabled={loading}
+                    className="w-full px-6 py-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] text-white text-[13px] font-bold border border-white/[0.08] transition-all disabled:opacity-50 disabled:pointer-events-none tracking-wider uppercase"
+                  >
+                    Send Normally
+                  </button>
+                  <PrimaryButton onClick={handleSend} disabled={loading}>
+                    {loading ? "Processing..." : "Send via Sendra →"}
+                  </PrimaryButton>
+                </div>
               )}
             </div>
 
@@ -277,8 +378,23 @@ export default function DemoPage() {
               <div className="flex-1 space-y-6">
                 {/* Result Card */}
                 <AnimatePresence mode="wait">
-                  {result ? (
+                  {loading ? (
                     <motion.div
+                      key="loading"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="flex flex-col items-center justify-center p-12 text-center space-y-6 border border-indigo-500/20 rounded-2xl bg-indigo-500/[0.02]"
+                    >
+                      <div className="w-8 h-8 rounded-full border-t-2 border-r-2 border-indigo-500 animate-spin" />
+                      <div className="flex flex-col gap-1">
+                          <div className="text-[14px] font-medium text-indigo-400">{isSendraTx ? "Processing via Sendra" : "Processing Normal Tx"}</div>
+                          <div className="text-[11px] text-white/40">{isSendraTx ? "Routing and executing transaction sequence..." : "Sending to standard RPC..."}</div>
+                      </div>
+                    </motion.div>
+                  ) : result ? (
+                    <motion.div
+                      key="result"
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       className={`p-6 rounded-2xl border ${result.success ? "bg-emerald-500/5 border-emerald-500/20" : "bg-red-500/5 border-red-500/20"}`}
@@ -318,6 +434,32 @@ export default function DemoPage() {
                     </div>
                   )}
                 </AnimatePresence>
+
+                {/* SDK Logs Display */}
+                {sdkLogs.length > 0 && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 pb-4">
+                    <div className="text-[10px] font-mono text-indigo-400/50 uppercase tracking-[0.2em] flex items-center gap-2">
+                        Deep Execution Trace
+                    </div>
+                    <div className="space-y-2">
+                      {sdkLogs.map((log, idx) => (
+                        <motion.div
+                          key={idx}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="p-3 rounded-lg bg-black/40 border border-white/[0.05] font-mono text-[11px] flex flex-col gap-1.5 backdrop-blur-md"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className={`${log.step.includes("RETRY") || log.step.includes("FAIL") ? "text-amber-400" : log.step.includes("SUCCESS") || log.step.includes("CONFIRM") ? "text-emerald-400" : "text-indigo-400"} font-bold tracking-wider`}>[{log.step}]</span>
+                            {log.attempt !== undefined && <span className="text-white/20 text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10">Attempt {log.attempt}</span>}
+                          </div>
+                          <span className="text-white/70">{log.message}</span>
+                          {log.rpc && <span className="text-white/30 text-[9.5px] truncate mt-0.5 break-all">RPC: {log.rpc}</span>}
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
               </div>
 
               <div className="mt-8 p-4 rounded-xl bg-black/20 border border-white/[0.03]">
