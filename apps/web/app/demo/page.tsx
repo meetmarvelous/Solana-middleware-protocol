@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { PublicKey, Connection, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
-import { SendWithReliability } from "@repo/sdk";
+import { sendWithReliability } from "@repo/sdk";
 
 // --- Icons ---
 const Icons = {
@@ -164,7 +164,7 @@ export default function DemoPage() {
 
     try {
       const signer = { publicKey, signTransaction };
-      const res = await SendWithReliability(
+      const res = await sendWithReliability(
         { receiver: new PublicKey(receiver), amount: Number(amount) },
         signer,
         { maxRetries: 3 }
@@ -206,17 +206,17 @@ export default function DemoPage() {
     try {
       const rpcUrl = "https://api.devnet.solana.com";
       const connection = new Connection(rpcUrl, "confirmed");
-      
+
       const senderAdd = publicKey;
       const receiverAdd = new PublicKey(receiver);
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-      
+
       const instruction = SystemProgram.transfer({
         fromPubkey: senderAdd,
         toPubkey: receiverAdd,
         lamports: Number(amount)
       });
-      
+
       const message = new TransactionMessage({
         payerKey: senderAdd,
         instructions: [instruction],
@@ -324,8 +324,8 @@ export default function DemoPage() {
                 </PrimaryButton>
               ) : (
                 <div className="grid grid-cols-2 gap-4">
-                  <button 
-                    onClick={handleNormalSend} 
+                  <button
+                    onClick={handleNormalSend}
                     disabled={loading}
                     className="w-full px-6 py-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] text-white text-[13px] font-bold border border-white/[0.08] transition-all disabled:opacity-50 disabled:pointer-events-none tracking-wider uppercase"
                   >
@@ -388,8 +388,8 @@ export default function DemoPage() {
                     >
                       <div className="w-8 h-8 rounded-full border-t-2 border-r-2 border-indigo-500 animate-spin" />
                       <div className="flex flex-col gap-1">
-                          <div className="text-[14px] font-medium text-indigo-400">{isSendraTx ? "Processing via Sendra" : "Processing Normal Tx"}</div>
-                          <div className="text-[11px] text-white/40">{isSendraTx ? "Routing and executing transaction sequence..." : "Sending to standard RPC..."}</div>
+                        <div className="text-[14px] font-medium text-indigo-400">{isSendraTx ? "Processing via Sendra" : "Processing Normal Tx"}</div>
+                        <div className="text-[11px] text-white/40">{isSendraTx ? "Routing and executing transaction sequence..." : "Sending to standard RPC..."}</div>
                       </div>
                     </motion.div>
                   ) : result ? (
@@ -439,7 +439,7 @@ export default function DemoPage() {
                 {sdkLogs.length > 0 && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 pb-4">
                     <div className="text-[10px] font-mono text-indigo-400/50 uppercase tracking-[0.2em] flex items-center gap-2">
-                        Deep Execution Trace
+                      Deep Execution Trace
                     </div>
                     <div className="space-y-2">
                       {sdkLogs.map((log, idx) => (

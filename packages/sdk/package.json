@@ -1,5 +1,7 @@
 {
-  "name": "@repo/sdk",
+  "name": "sendra",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "module": "src/index.ts",
   "type": "module",
   "exports": {
