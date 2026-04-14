@@ -2,7 +2,7 @@ import type { DeserializedTx, OptimizedTx, RpcEndpoint } from "@repo/types/index
 import { Connection } from "@solana/web3.js";
 import { applyPriorityFee } from "@repo/tx-builder/applyFee";
 
-export async function OptimizeFee(tx: DeserializedTx, RPC_URL: RpcEndpoint, prevFee?: number): Promise<OptimizedTx> {
+export async function optimizeFee(tx: DeserializedTx, RPC_URL: RpcEndpoint, prevFee?: number): Promise<OptimizedTx> {
     try {
         let newFee: number;
         if (prevFee !== undefined) {
