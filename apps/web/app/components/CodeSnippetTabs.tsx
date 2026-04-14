@@ -178,95 +178,155 @@ export function CodeSnippetTabs() {
     <div className="relative w-full">
       <div
         className="absolute inset-0 rounded-2xl -z-10 pointer-events-none"
-        style={{ boxShadow: "0 0 80px rgba(99,102,241,0.05), 0 32px 64px rgba(0,0,0,0.5)" }}
+        style={{ boxShadow: "0 0 80px rgba(99,102,241,0.13), 0 32px 64px rgba(0,0,0,0.5)" }}
       />
 
       <div
-        className="rounded-xl overflow-hidden"
+        className="rounded-2xl overflow-hidden"
         style={{
-          backgroundColor: "#0d0d0f",
-          border: "1px solid rgba(255,255,255,0.08)",
+          backgroundColor: "#000000",
+          border: "1px solid rgba(255,255,255,0.07)",
         }}
       >
         {/* TOP BAR */}
         <div
-          className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.05]"
-          style={{ background: "#111113" }}
+          className="flex items-center justify-between px-4 py-3 border-b border-white/[0.05]"
+          style={{ background: "rgba(255,255,255,0.018)" }}
         >
-          {/* Logo Title */}
-          <div className="flex items-center gap-2 mr-4 text-white">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
-            <span className="font-semibold text-[13px] tracking-wide">Sendra</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]/75" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]/75" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[#28c840]/75" />
           </div>
 
-          {/* TABS (Pills) */}
-          <div className="flex items-center gap-2">
-            {TABS.map((tab) => {
-              const isActive = active === tab.key;
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => setActive(tab.key)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md font-mono text-[11px] font-medium transition-all duration-200 outline-none"
-                  style={{
-                    backgroundColor: isActive ? "#ffb870" : "rgba(255,255,255,0.06)",
-                    color: isActive ? "#000000" : "rgba(255,255,255,0.7)",
-                    border: isActive ? "1px solid #ffb870" : "1px solid rgba(255,255,255,0.04)",
-                  }}
+          <span className="font-mono text-[9.5px] text-white/20 tracking-widest uppercase">
+            Sendra API
+          </span>
+          <motion.button
+            onClick={handleCopy}
+            whileTap={{ scale: 0.93 }}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md font-mono text-[9.5px] transition-colors duration-200"
+            style={{
+              color: copied ? "#4ade80" : "rgba(255,255,255,0.28)",
+              background: copied ? "rgba(74,222,128,0.08)" : "rgba(255,255,255,0.04)",
+              border: `1px solid ${copied ? "rgba(74,222,128,0.2)" : "rgba(255,255,255,0.07)"}`,
+            }}
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              {copied ? (
+                <motion.span
+                  key="check"
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.7 }}
+                  transition={{ duration: 0.15 }}
+                  className="flex items-center gap-1.5"
                 >
+                  <CheckIcon />
+                  Copied!
+                </motion.span>
+              ) : (
+                <motion.span
+                  key="copy"
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.7 }}
+                  transition={{ duration: 0.15 }}
+                  className="flex items-center gap-1.5"
+                >
+                  <CopyIcon />
+                  Copy
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.button>
+        </div>
+
+        <div
+          className="flex items-center gap-0 px-3 pt-2 border-b border-white/[0.04]"
+          style={{ background: "rgba(0,0,0,0.15)" }}
+        >
+          {TABS.map((tab) => {
+            const isActive = active === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActive(tab.key)}
+                className="relative px-3.5 py-2 font-mono text-[10.5px] transition-colors duration-200 outline-none"
+                style={{ color: isActive ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.28)" }}
+              >
+                <span className="flex items-center gap-1.5">
+                  <span
+                    className="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-opacity duration-200"
+                    style={{
+                      background: tab.dot,
+                      opacity: isActive ? 1 : 0.35,
+                    }}
+                  />
                   {tab.label}
-                </button>
-              );
-            })}
-          </div>
+                </span>
+                {isActive && (
+                  <motion.div
+                    layoutId="tab-indicator"
+                    className="absolute bottom-0 left-0 right-0 h-px"
+                    style={{
+                      background: "linear-gradient(90deg, transparent, rgba(139,92,246,0.8), transparent)",
+                    }}
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* MAIN TWO PANELS */}
         <div className="flex flex-col md:flex-row relative">
 
-          {/* LEFT CODE PANEL */}
-          <div className="relative w-full md:w-[60%] border-r border-white/[0.04] p-2 bg-[#0c0c0e]">
-            {/* Copy Button placed floating on top right of the code area */}
-            <motion.button
-              onClick={handleCopy}
-              whileTap={{ scale: 0.95 }}
-              className="absolute top-4 right-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-md font-mono text-[11px] font-medium transition-colors"
-              style={{
-                backgroundColor: "rgba(255,255,255,0.06)",
-                color: copied ? "#4ade80" : "rgba(255,255,255,0.6)",
-                border: "1px solid rgba(255,255,255,0.04)"
-              }}
-            >
-              {copied ? <CheckIcon /> : <CopyIcon />}
-              {copied ? "Copied" : "Copy Code"}
-            </motion.button>
+          <div
+            className="absolute top-0 left-0 right-0 h-px z-10"
+            style={{ background: "linear-gradient(90deg, transparent, rgba(99,102,241,0.15), transparent)" }}
+          />
+
+          <div className="relative overflow-hidden w-full md:w-[60%] border-r border-white/[0.04]">
+            <div
+              className="absolute top-0 bottom-0 left-0 w-10"
+              style={{ background: "rgba(0,0,0,0.18)", borderRight: "1px solid rgba(255,255,255,0.03)" }}
+            />
 
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={active}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="h-[550px] overflow-hidden"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.18, ease: "easeInOut" }}
+                className="h-[600px] overflow-hidden"
               >
                 <SyntaxHighlighter
                   language={activeTab.lang}
                   style={customTheme}
-                  showLineNumbers={false}
+                  showLineNumbers={true}
                   className="[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                  lineNumberStyle={{
+                    display: "inline-block",
+                    color: "rgba(255,255,255,0.18)",
+                    fontSize: "10px",
+                    minWidth: "40px",
+                    paddingRight: "12px",
+                    paddingLeft: "4px",
+                    textAlign: "right",
+                    userSelect: "none",
+                  }}
                   customStyle={{
                     margin: 0,
-                    padding: "24px",
+                    padding: "20px 20px 24px 0",
                     background: "transparent",
                     overflow: "auto",
                   }}
                   codeTagProps={{
                     style: {
                       fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace",
-                      fontSize: "13px"
                     },
                   }}
                 >
@@ -276,30 +336,46 @@ export function CodeSnippetTabs() {
             </AnimatePresence>
           </div>
 
-          {/* RIGHT COMMENTS PANEL */}
-          <div className="w-full md:w-[40%] p-8 bg-[#0e0e11] font-mono text-[12px] leading-relaxed h-[550px] overflow-hidden">
-            <div style={{ color: "rgba(255,255,255,0.4)" }}>
-              # Sendra
+          <div className="w-full md:w-[40%] p-8 bg-transparent border-l border-white/[0.02] text-[#6b7280] font-mono text-[12px] leading-relaxed h-[600px] overflow-hidden">
+            <div className="mb-6">
+              <span className="text-[#a5b4fc]"># Sendra</span>
               <br />
               <br />
-              # Sendra API logic intercepts your transactions before they hit the network to retrieve relevant context from multiple apps.
+              # Sendra intercepts your transactions before they hit the network.
+              <br />
+              # It simulates, optimizes, routes — and if anything goes wrong, retries.
+              <br />
+              # Automatically. Every time.
               <br />
               <br />
-              # Installation
+              <br />
+              <span className="text-[#a5b4fc]"># Integration & Features</span>
               <br />
               <br />
-              # To install Sendra SDK, run:
+              - Zero code changes to your app
               <br />
+              # - Sub-100ms overhead per transaction
               <br />
-              # pip install sendra-sdk
-              <br />
-              # npm install @sendra/sdk
-              <br />
-              <br />
-              <span className="text-[#a5b4fc] block mt-2">→ Read more on docs.sendra.dev</span>
+              # - Works with any Solana SDK
             </div>
           </div>
-
+        </div>
+        <div
+          className="flex items-center gap-2 px-4 py-2.5 border-t border-white/[0.04]"
+          style={{ background: "rgba(0,0,0,0.25)" }}
+        >
+          <span className="font-mono text-[8.5px] text-white/16 tracking-widest uppercase">
+            POST /api/tx · api.sendra.dev
+          </span>
+          <div className="ml-auto flex items-center gap-1.5">
+            <span className="font-mono text-[8.5px] text-white/16">maxRetries: 3</span>
+            <span
+              className="px-1.5 py-0.5 rounded font-mono text-[7.5px] text-indigo-300/50 tracking-wide"
+              style={{ background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.12)" }}
+            >
+              JSON
+            </span>
+          </div>
         </div>
       </div>
     </div>

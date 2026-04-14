@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { SOLANA_DEVNET_RPC_URL } from "@repo/config/index";
+import { SOLANA_DEVNET_RPC_URL } from "@repo/config";
 
 // Import styles
 import "@solana/wallet-adapter-react-ui/styles.css";
