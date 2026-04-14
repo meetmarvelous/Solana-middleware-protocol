@@ -1,8 +1,8 @@
-import { RpcEndpoint, Signature, TxStatus } from "@repo/types/index";
+import { RpcEndpoint, Signature, TxStatus } from "@repo/types";
 import {
     Connection,
 } from "@solana/web3.js";
-import { SOLANA_DEVNET_RPC_URL } from "@repo/config/index";
+import { SOLANA_DEVNET_RPC_URL } from "@repo/config";
 
 export async function getTxStatus(signature: Signature, RPC_URL: RpcEndpoint): Promise<TxStatus> {
     try {

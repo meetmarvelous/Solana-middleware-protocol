@@ -1,1 +1,1 @@
-export * from "./optimize.js";
+export * from "./optimize";

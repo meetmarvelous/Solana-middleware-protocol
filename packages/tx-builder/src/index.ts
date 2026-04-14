@@ -1,2 +1,2 @@
-export * from "./builder.js"
-export * from "./applyFee.js"
+export * from "./builder"
+export * from "./applyFee"

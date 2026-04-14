@@ -1,8 +1,8 @@
-export * from "@repo/core/sendWithReliability";
+export { sendWithReliability } from "@repo/core";
 
 export type {
     SendraParams,
     SendraOptions,
     SendraResult,
     Signer
-} from "@repo/types/index";
+} from "@repo/types";

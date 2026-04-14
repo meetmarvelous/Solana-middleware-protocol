@@ -1,7 +1,14 @@
 {
   "name": "@repo/fee-optimizer",
   "module": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "module",
+  "scripts": {
+    "build": "tsc --build",
+    "check-types": "tsc --noEmit",
+    "dev": "tsc --build --watch"
+  },
   "exports": {
     ".": "./src/index.ts"
   },

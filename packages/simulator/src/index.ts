@@ -1,1 +1,1 @@
-export * from "./simulate.js"
+export * from "./simulate"

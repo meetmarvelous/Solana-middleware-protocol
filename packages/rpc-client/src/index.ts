@@ -1,2 +1,2 @@
-export * from "./send.js"
-export * from "./status.js"
+export * from "./send"
+export * from "./status"

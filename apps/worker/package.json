@@ -4,6 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "build": "bun build src/worker.ts --outdir dist --target bun",
+    "start": "bun run dist/worker.js",
     "dev": "bun run --watch src/worker.ts"
   },
   "devDependencies": {

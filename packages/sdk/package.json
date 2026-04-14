@@ -4,6 +4,11 @@
   "types": "dist/index.d.ts",
   "module": "src/index.ts",
   "type": "module",
+  "scripts": {
+    "build": "tsc --build",
+    "check-types": "tsc --noEmit",
+    "dev": "tsc --build --watch"
+  },
   "exports": {
     ".": "./src/index.ts",
     "./*": "./src/*.ts"

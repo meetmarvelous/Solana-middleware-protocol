@@ -1,1 +1,1 @@
-export * from "./sendWithReliability.js"
+export * from "./sendWithReliability"

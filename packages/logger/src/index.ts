@@ -1,2 +1,2 @@
-export * from "./logger.js";
-export * from "./confirmTx.js";
+export * from "./logger";
+export * from "./confirmTx";
