@@ -1,159 +1,205 @@
-# Turborepo starter
+# Sendra
 
-This Turborepo starter is maintained by the Turborepo core team.
+Reliable transaction execution layer for Solana.
 
-## Using this example
+---
 
-Run the following command:
+## 🚀 What is Sendra?
 
-```sh
-npx create-turbo@latest
+Sendra is a developer-focused SDK that ensures Solana transactions are executed reliably. Instead of just sending a transaction and hoping it lands, Sendra manages the full lifecycle — from construction to confirmation — handling failures, retries, and network issues automatically.
+
+---
+
+## ❗ Problem
+
+Solana transactions often fail due to:
+
+- RPC node failures or latency  
+- Network congestion  
+- Incorrect or insufficient priority fees  
+- Stale blockhashes  
+
+Developers typically need to build their own:
+
+- Retry logic  
+- RPC failover systems  
+- Fee estimation mechanisms  
+- Monitoring loops  
+
+This is complex, error-prone, and repetitive.
+
+---
+
+## ✅ Solution
+
+Sendra provides a single SDK function that handles everything:
+
+- Smart RPC routing (fastest node selection)  
+- Dynamic fee optimization  
+- Pre-flight simulation  
+- Automatic retries with fresh blockhash  
+- Transaction monitoring and confirmation  
+
+👉 Instead of:
+```
+write custom retry + routing + fee logic
 ```
 
-## What's inside?
-
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+👉 You just do:
+```
+sendWithReliability(...)
 ```
 
-Without global `turbo`, use your package manager:
+---
 
-```sh
-cd my-turborepo
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+## 📦 Installation
+
+```bash
+npm install sendra
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+---
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+## ⚙️ Usage
 
-```sh
-turbo build --filter=docs
+```ts
+import { sendWithReliability } from "sendra";
+
+const result = await sendWithReliability(
+  {
+    receiver: "RECEIVER_PUBLIC_KEY",
+    amount: 1000,
+  },
+  signer,
+  { maxRetries: 3 }
+);
+
+console.log(result);
 ```
 
-Without global `turbo`:
+---
 
-```sh
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+## 🔑 Signer
+
+Sendra requires a signer to sign transactions.
+
+### Wallet Adapter (Recommended)
+
+Works directly with Phantom, Solflare, Backpack, etc.
+
+```ts
+const signer = wallet;
 ```
 
-### Develop
+---
 
-To develop all apps and packages, run the following command:
+### Backend Keypair
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
+```ts
+const signer = {
+  publicKey: keypair.publicKey,
+  signTransaction: async (tx) => {
+    tx.sign([keypair]);
+    return tx;
+  },
+};
 ```
 
-Without global `turbo`, use your package manager:
+---
 
-```sh
-cd my-turborepo
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+## 🔄 How it Works
+
+1. Select fastest RPC  
+2. Build transaction  
+3. Optimize priority fee  
+4. Simulate transaction  
+5. Sign transaction  
+6. Send to network  
+7. Monitor confirmation  
+8. Retry with new blockhash if needed  
+
+---
+
+## ✨ Features
+
+- Smart RPC failover  
+- Dynamic fee optimization  
+- Pre-flight simulation  
+- Automatic retry engine  
+- Transaction confirmation monitoring  
+- Modular architecture  
+
+---
+
+## 📊 Response Format
+
+```json
+{
+  "status": "success" | "failed",
+  "signature": "string",
+  "attempts": number
+}
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+---
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+## 🧪 Demo
 
-```sh
-turbo dev --filter=web
+Run a demo script:
+
+```bash
+bun run demo.ts
 ```
 
-Without global `turbo`:
+---
 
-```sh
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+## 🏗️ Project Structure
+
+```
+packages/
+  sdk/            # Public SDK entry
+  core/           # Orchestration logic
+  router/         # RPC selection
+  fee-optimizer/  # Fee logic
+  simulator/      # Pre-flight checks
+  rpc-client/     # Send + status
+  tx-builder/     # Build/rebuild tx
 ```
 
-### Remote Caching
+---
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+## 🤝 Contributing
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+### Setup
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
+```bash
+git clone <repo>
+cd sendra
+npm install
 ```
 
-Without global `turbo`, use your package manager:
+### Run locally
 
-```sh
-cd my-turborepo
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+```bash
+npm run dev
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+### Guidelines
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+- Keep packages modular  
+- Avoid tight coupling between packages  
+- Add shared types in `@repo/types`  
+- Write reusable functions  
+- Test flows before submitting PR  
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+---
 
-```sh
-turbo link
-```
+## 💡 Vision
 
-Without global `turbo`:
+Sendra aims to become the execution layer for Solana — ensuring every transaction is not just sent, but successfully landed.
 
-```sh
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
+---
 
-## Useful Links
+## 📌 Summary
 
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+Sendra guarantees that your transaction lands, not just gets sent.
