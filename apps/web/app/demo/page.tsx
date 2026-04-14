@@ -7,6 +7,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { PublicKey, Connection, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { sendWithReliability } from "@repo/sdk";
+import SendraFlowDiagram from "../components/SendraFlowDiagram";
 
 // --- Icons ---
 const Icons = {
@@ -458,6 +459,16 @@ export default function DemoPage() {
                         </motion.div>
                       ))}
                     </div>
+                  </motion.div>
+                )}
+
+                {/* Sendra Flow Diagram */}
+                {isSendraTx && sdkLogs.length > 0 && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pb-4">
+                    <div className="text-[10px] font-mono text-indigo-400/50 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
+                      Execution Flow
+                    </div>
+                    <SendraFlowDiagram currentStep={sdkLogs.length > 0 ? sdkLogs[sdkLogs.length - 1].step : "IDLE"} />
                   </motion.div>
                 )}
               </div>

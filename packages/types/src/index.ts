@@ -83,6 +83,8 @@ export type SendraLogEvent =
 
 export type SendraLog = {
     event: SendraLogEvent;
+    step?: string;
+    message?: string;
     timestamp: number;
     requestId?: string;
     attempt?: number;

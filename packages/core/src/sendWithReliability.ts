@@ -17,12 +17,32 @@ export async function sendWithReliability(params: SendraParams, signer: Signer, 
     let currentSignature = "";
 
     const track = (event: SendraLogEvent, data: any = {}) => {
+        let step = event as string;
+        let message = `Executed ${event}`;
+        
+        switch (event) {
+            case "RPC_SELECTED": step = "SELECT_RPC"; message = "Selected optimal RPC node"; break;
+            case "TX_BUILT": step = "BUILD_TX"; message = "Constructed transaction payload"; break;
+            case "FEE_OPTIMIZED": step = "OPTIMIZE_FEE"; message = `Dynamically set priority fee: ${currentFee || data.fee}`; break;
+            case "SIMULATION_SUCCESS": step = "SIMULATE"; message = "Pre-flight simulation successful"; break;
+            case "SIMULATION_FAILED": step = "SIMULATE"; message = `Pre-flight simulation failed: ${data.reason}`; break;
+            case "TX_SIGNED": step = "SIGN_TX"; message = "Requested wallet signature"; break;
+            case "TX_SENT": step = "SEND_TX"; message = "Broadcasted to network"; break;
+            case "TX_CONFIRMED": step = "CONFIRM_TX"; message = "Transaction confirmed on-chain"; break;
+            case "RETRY_TRIGGERED": step = "RETRY"; message = `Retry triggered. Reason: ${data.reason}`; break;
+            case "TX_FAILED": step = "CONFIRM_TX"; message = "Transaction failed permanently"; break;
+            case "STATUS_CHECK": step = "CONFIRM_TX"; message = "Monitoring block finality"; break;
+            case "INIT": step = "INIT"; message = "Initialized Sendra"; break;
+        }
+
         const entry = log(event, {
             requestId,
             attempt,
             rpc: currentRpc,
             fee: currentFee,
             signature: currentSignature,
+            step,
+            message,
             ...data
         });
         logs.push(entry);
