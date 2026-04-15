@@ -800,6 +800,116 @@ function HeroGhostButton({ children }: { children: string }) {
   );
 }
 
+const faqData = [
+  {
+    q: "What is Sendra?",
+    a: "Sendra is a transaction reliability layer for Solana. It intercepts your transactions before they hit the network, simulates them, optimizes fees, selects the fastest RPC, and handles retries automatically — ensuring every transaction lands.",
+  },
+  {
+    q: "How does Sendra integrate with my existing app?",
+    a: "Sendra provides a drop-in SDK. Replace your existing sendTransaction call with sendWithReliability — no infrastructure changes, no new dependencies, no migration. It works with any Solana SDK.",
+  },
+  {
+    q: "How is Sendra different from standard RPC providers?",
+    a: "Standard RPCs are just pipes — they send your transaction and hope it lands. Sendra adds an intelligent execution layer: pre-flight simulation, dynamic fee optimization, multi-node routing, and automatic retry with exponential backoff.",
+  },
+  {
+    q: "Does Sendra modify my transaction?",
+    a: "Sendra only adjusts the compute unit price (priority fee) based on real-time network conditions. Your transaction instructions, accounts, and logic remain completely untouched.",
+  },
+  {
+    q: "What happens when a transaction fails?",
+    a: "Sendra automatically retries with a fresh RPC route and recalculated fees. It uses exponential backoff and intelligent node switching to maximize the chance of confirmation, up to your configured retry limit.",
+  },
+  {
+    q: "What Solana programs does Sendra support?",
+    a: "Sendra is program-agnostic. It works with any Solana program — token transfers, DeFi swaps, NFT mints, governance votes, or custom programs. If it's a Solana transaction, Sendra can handle it.",
+  },
+  {
+    q: "Is Sendra open source?",
+    a: "Yes. Sendra's SDK and core packages are fully open source. You can inspect every line of code, contribute, or fork it for your own use.",
+  },
+];
+
+function FAQSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  return (
+    <section className="relative z-10">
+      <Divider />
+      <div className="max-w-4xl mx-auto px-6 py-24">
+        <h2 className="text-3xl md:text-[42px] font-light text-white text-center mb-16 tracking-tight">
+          Frequently Asked Questions
+        </h2>
+
+        <div className="border-t border-white/[0.06]">
+          {faqData.map((item, i) => {
+            const isOpen = openIndex === i;
+            return (
+              <motion.div
+                key={i}
+                initial={false}
+                className="border-b border-white/[0.06]"
+              >
+                <button
+                  onClick={() => setOpenIndex(isOpen ? null : i)}
+                  className="w-full flex items-center gap-4 py-5 text-left group"
+                >
+                  {/* Number */}
+                  <span className="text-[13px] font-mono text-white/20 flex-shrink-0 w-16 text-center">
+                    / {String(i + 1).padStart(2, "0")} /
+                  </span>
+
+                  {/* Question */}
+                  <span className="flex-1 text-[14px] text-white/80 font-medium">
+                    {item.q}
+                  </span>
+
+                  {/* Toggle icon */}
+                  <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-200"
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                    }}>
+                    <motion.span
+                      animate={{ rotate: isOpen ? 45 : 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="text-white/40 text-[16px] leading-none"
+                    >
+                      +
+                    </motion.span>
+                  </div>
+                </button>
+
+                {/* Answer */}
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pb-5 pl-16 pr-12">
+                        <p className="text-[13px] leading-relaxed text-white/35">
+                          {item.a}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+
 export default function SendraPage() {
   const heroRef = useRef(null);
   const { scrollYProgress: heroScroll } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
@@ -807,11 +917,12 @@ export default function SendraPage() {
   const heroOpacity = useTransform(heroScroll, [0, 0.65], [1, 0]);
 
   const pipeline = [
-    { label: "Simulate", desc: "Pre-flight execution check" },
-    { label: "Optimize", desc: "Dynamic fee computation" },
-    { label: "Route", desc: "Fastest RPC selection" },
-    { label: "Send", desc: "Submit with full context" },
-    { label: "Retry", desc: "Automatic smart failover" },
+    { label: "Select RPC", desc: "Probes multiple RPC endpoints and picks the fastest, most reliable node for your transaction." },
+    { label: "Build Transaction", desc: "Constructs the full transaction payload with recent blockhash and correct account references." },
+    { label: "Optimize Fees", desc: "Dynamically computes the ideal priority fee based on current network congestion — never overpay." },
+    { label: "Simulate", desc: "Runs a pre-flight simulation against live chain state to catch reverts before they cost you." },
+    { label: "Send & Confirm", desc: "Signs, broadcasts, and monitors the transaction until on-chain confirmation is received." },
+    { label: "Auto-Retry", desc: "If anything fails — timeout, dropped tx, RPC error — Sendra automatically retries with a fresh route." },
   ];
 
   const features = [
@@ -950,26 +1061,77 @@ export default function SendraPage() {
       {/* ── How it works ── */}
       <section id="how" className="relative z-10">
         <Divider />
-        <div className="max-w-5xl mx-auto px-6 py-24">
+        <div className="max-w-7xl mx-auto px-6 py-24">
           <div className="text-center mb-14">
             <div className="text-[10px] font-mono text-white/20 uppercase tracking-[0.2em] mb-3">Pipeline</div>
             <h2 className="text-3xl md:text-[40px] font-light text-white leading-tight">How Sendra works</h2>
           </div>
-          <div className="relative grid grid-cols-2 md:grid-cols-5 gap-3">
-            {pipeline.map((step, i) => (
-              <div key={step.label} className="relative">
-                <PipelineStep {...step} index={i} />
-                {i < pipeline.length - 1 && (
-                  <div className="hidden md:flex absolute top-[44%] -right-2 z-10 items-center">
-                    <div className="w-2 h-px" style={{ background: "rgba(255,255,255,0.12)" }} />
-                    <svg width="5" height="5" viewBox="0 0 5 5" fill="none" style={{ opacity: 0.2 }}>
-                      <path d="M0 2.5L4 0.5V4.5L0 2.5Z" fill="white" />
-                    </svg>
-                  </div>
-                )}
+
+          {/* ── Main bordered container ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: [0.21, 0.47, 0.32, 0.98] }}
+            className="rounded-2xl overflow-hidden"
+            style={{
+              border: "1px solid rgba(255,255,255,0.08)",
+              background: "linear-gradient(160deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.008) 100%)",
+            }}
+          >
+            {/* ── Video ── */}
+            <div className="relative w-full" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              <video
+                className="w-full block"
+                autoPlay
+                loop
+                muted
+                playsInline
+              >
+                <source src="/working.MP4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+
+            {/* ── Steps rows (2 rows × 3 columns) ── */}
+            {[pipeline.slice(0, 3), pipeline.slice(3, 6)].map((row, rowIdx) => (
+              <div key={rowIdx} className="flex flex-col sm:flex-row"
+                style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                {row.map((step, colIdx) => {
+                  const globalIdx = rowIdx * 3 + colIdx;
+                  const isLastCol = colIdx === row.length - 1;
+                  return (
+                    <motion.div
+                      key={step.label}
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.35, delay: globalIdx * 0.06 }}
+                      className="flex-1 px-6 py-5"
+                      style={{
+                        borderRight: isLastCol ? "none" : "1px solid rgba(255,255,255,0.06)",
+                      }}
+                    >
+                      {/* Number + Title inline */}
+                      <div className="flex items-baseline gap-3 mb-1.5">
+                        <span className="text-[14px] font-semibold" style={{ color: "#E8734A" }}>
+                          {String(globalIdx + 1).padStart(2, "0")}
+                        </span>
+                        <span className="text-[14px] font-semibold text-white">
+                          {step.label}
+                        </span>
+                      </div>
+                      {/* Description */}
+                      <p className="text-[12.5px] leading-relaxed text-white/40 pl-[29px]">
+                        {step.desc}
+                      </p>
+                    </motion.div>
+                  );
+                })}
               </div>
             ))}
-          </div>
+          </motion.div>
+
           <motion.p
             initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
             className="text-center mt-10 text-[12px] text-white/18 font-mono italic tracking-wide">
@@ -978,124 +1140,213 @@ export default function SendraPage() {
         </div>
       </section>
 
-      {/* ── Features ── */}
-      <section id="features" className="relative z-10">
-        <Divider />
-        <div className="max-w-5xl mx-auto px-6 py-24">
-          <div className="text-center mb-14">
-            <div className="text-[10px] font-mono text-white/20 uppercase tracking-[0.2em] mb-3">Capabilities</div>
-            <h2 className="text-3xl md:text-[40px] font-light text-white leading-tight">Built on four pillars</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-            {features.map((f, i) => (
-              <FeatureCard key={f.title} {...f} index={i} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Architecture Diagram ── */}
-      <section id="arch" className="relative z-10">
-        <Divider />
-        <div className="max-w-5xl mx-auto px-6 py-24">
-          <div className="text-center mb-14">
-            <div className="text-[10px] font-mono text-white/20 uppercase tracking-[0.2em] mb-3">System Design</div>
-            <h2 className="text-3xl md:text-[40px] font-light text-white leading-tight">Architecture</h2>
-            <p className="text-white/28 text-[14px] mt-3 max-w-md mx-auto">
-              User → Sendra API → Simulator → Fee Optimizer → Router → RPC → Blockchain
-            </p>
-          </div>
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="rounded-2xl p-6 md:p-8 overflow-x-auto"
-            style={{
-              background: "linear-gradient(160deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)",
-              border: "1px solid rgba(255,255,255,0.07)",
-            }}
-          >
-            <ArchitectureDiagram />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── Metrics ── */}
+      {/* ── Blog / Insights ── */}
       <section className="relative z-10">
         <Divider />
-        <div className="max-w-5xl mx-auto px-6 py-24">
-          <div className="text-center mb-14">
-            <div className="text-[10px] font-mono text-white/20 uppercase tracking-[0.2em] mb-3">Performance</div>
-            <h2 className="text-3xl md:text-[40px] font-light text-white leading-tight">Built for reliability</h2>
-          </div>
-          <MetricsCards />
-        </div>
-      </section>
-
-      {/* ── Demo ── */}
-      <section id="demo" className="relative z-10">
-        <Divider />
-        <DemoTerminal />
-      </section>
-
-      {/* ── CTA ── */}
-      <section className="relative z-10 overflow-hidden">
-        <Divider />
-        {/* Radial glow behind CTA */}
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-          <div className="w-[600px] h-[400px] rounded-full opacity-[0.07]"
-            style={{ background: "radial-gradient(ellipse, rgba(99,102,241,1) 0%, transparent 70%)" }}
-          />
-        </div>
-        <div className="relative max-w-2xl mx-auto px-6 py-32 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} transition={{ duration: 0.65 }}
-          >
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-8"
-              style={{ border: "1px solid rgba(99,102,241,0.18)", background: "rgba(99,102,241,0.06)" }}>
-              <span className="text-[10px] font-mono text-indigo-300/60 tracking-[0.16em] uppercase">Open beta</span>
+        <div className="max-w-7xl mx-auto px-6 py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-12 lg:gap-16">
+            {/* Left heading */}
+            <div>
+              <div className="inline-block px-3 py-1 rounded border border-white/[0.08] text-[11px] font-mono text-white/30 tracking-wider mb-6">
+                Our Blog
+              </div>
+              <h2 className="text-3xl md:text-[38px] font-light text-white leading-[1.15]">
+                Insights from the<br />Solana infrastructure<br />frontlines
+              </h2>
             </div>
-            <h2 className="text-4xl md:text-[50px] font-extralight text-white mb-5 leading-tight tracking-tight">
-              Ready to stop losing<br />transactions?
-            </h2>
-            <p className="text-white/32 mb-10 text-[15px] leading-relaxed">
-              Integrate Sendra in minutes. Drop-in SDK, zero infrastructure changes.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center gap-2.5 justify-center">
-              <Link href="/demo">
-                <PrimaryButton>
-                  Try Demo
-                  <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                    <path d="M2 5.5h7M5.5 2l3.5 3.5L5.5 9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </PrimaryButton>
-              </Link>
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer">
-                <GhostButton>View on GitHub</GhostButton>
-              </a>
+
+            {/* Right — 2 blog cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                {
+                  tag: "Engineering",
+                  title: "How Sendra achieves 99.8% transaction success rate",
+                  desc: "A deep dive into our simulation engine, fee optimizer, and smart retry system that ensures every Solana transaction lands.",
+                  date: "Apr 10, 2026",
+                },
+                {
+                  tag: "Announcement",
+                  title: "Sendra SDK v2.1 — Open Beta Launch",
+                  desc: "We're opening Sendra to all Solana developers. Drop-in SDK, zero infra changes, and full transaction lifecycle control.",
+                  date: "Mar 28, 2026",
+                },
+              ].map((post, i) => (
+                <motion.div
+                  key={post.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className="group flex flex-col rounded-2xl overflow-hidden cursor-pointer"
+                  style={{
+                    border: "1px solid rgba(255,255,255,0.07)",
+                    background: "linear-gradient(160deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.008) 100%)",
+                  }}
+                >
+                  {/* Card image area */}
+                  <div className="relative w-full h-52 overflow-hidden">
+                    <img
+                      src="/hero_bg.jpg"
+                      alt={post.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      style={{ filter: "brightness(0.55) saturate(0.8)" }}
+                    />
+                    <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.7) 100%)" }} />
+                  </div>
+
+                  {/* Card body */}
+                  <div className="flex flex-col flex-1 p-6">
+                    <div className="inline-block self-start px-2.5 py-1 rounded border border-white/[0.08] text-[10px] font-mono text-white/35 tracking-wider mb-4">
+                      {post.tag}
+                    </div>
+                    <h3 className="text-[16px] font-semibold text-white mb-2.5 leading-snug group-hover:text-white/90 transition-colors">
+                      {post.title}
+                    </h3>
+                    <p className="text-[12.5px] leading-relaxed text-white/35 mb-5 flex-1">
+                      {post.desc}
+                    </p>
+                    <span className="text-[11px] font-mono text-white/20 tracking-wide">
+                      {post.date}
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <FAQSection />
+
+      {/* ── CTA Banner ── */}
+      <section className="relative z-10">
+        <Divider />
+        <div className="max-w-7xl mx-auto px-6 py-24">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="relative rounded-2xl overflow-hidden"
+            style={{ border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            {/* Background image */}
+            <div className="absolute inset-0">
+              <img
+                src="/hero_bg.jpg"
+                alt=""
+                className="w-full h-full object-cover"
+                style={{ filter: "blur(30px) brightness(0.5) saturate(0.7)" }}
+              />
+              <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.25)" }} />
+            </div>
+
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 py-20 md:py-28">
+              <h2 className="text-3xl md:text-[42px] font-light text-white mb-8 leading-tight tracking-tight">
+                Ready to stop losing transactions?
+              </h2>
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <Link href="/demo">
+                  <motion.button
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="px-7 py-3 bg-white text-black font-semibold text-[12px] tracking-[0.12em] uppercase rounded hover:bg-white/90 transition-colors"
+                  >
+                    Start Building
+                  </motion.button>
+                </Link>
+                <motion.button
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="px-7 py-3 text-white/80 font-semibold text-[12px] tracking-[0.12em] uppercase rounded transition-colors hover:text-white"
+                  style={{
+                    background: "rgba(255,255,255,0.08)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                  }}
+                >
+                  Book a Call
+                </motion.button>
+              </div>
             </div>
           </motion.div>
         </div>
       </section>
 
       {/* ── Footer ── */}
-      <footer className="relative z-10">
-        <Divider />
-        <div className="max-w-7xl mx-auto px-8 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex flex-1 justify-center md:justify-start">
-            <TiltLogo />
+      <footer className="relative z-10 rounded-t-[32px] overflow-hidden">
+        {/* Background image — clearly visible */}
+        <div className="absolute inset-0 z-0 rounded-t-[32px] overflow-hidden">
+          <img
+            src="/hero_bg.jpg"
+            alt=""
+            className="w-full h-full object-cover"
+            style={{ objectPosition: "center center" }}
+          />
+          {/* Light scrim — just enough for text readability, image stays visible */}
+          <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(10,10,14,0.75) 0%, rgba(10,10,14,0.55) 60%, rgba(10,10,14,0.35) 100%)" }} />
+        </div>
+
+        {/* Footer content */}
+        <div className="relative z-10 flex flex-col justify-between" style={{ minHeight: 440, padding: "60px 52px 36px 52px" }}>
+          {/* Main area: Logo left + Nav right */}
+          <div className="flex flex-col md:flex-row justify-between items-start gap-12 flex-1">
+            {/* Large logo + brand name */}
+            <div className="flex items-center gap-4">
+              <img src="/logo.png" alt="Sendra Logo" width={56} height={56} className="rounded-md object-contain" />
+              <span className="text-white font-semibold text-[46px] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif" }}>Sendra</span>
+            </div>
+
+            {/* Navigation links — stacked column, left-aligned, monospace, uppercase */}
+            <nav className="flex flex-col items-start gap-[13px] pt-2">
+              {["Docs", "Contact Us", "Blog", "GitHub", "Careers", "Terms & Conditions", "Privacy Policy"].map(link => (
+                <a
+                  key={link}
+                  href="#"
+                  className="text-[12.5px] text-white/70 uppercase hover:text-white transition-colors duration-200"
+                  style={{ fontFamily: "'JetBrains Mono', 'SF Mono', 'Fira Code', 'Courier New', monospace", letterSpacing: "0.14em" }}
+                >
+                  {link}
+                </a>
+              ))}
+            </nav>
           </div>
-          <p className="text-[11px] text-white/16 font-mono tracking-wide text-center">Built for Solana builders.</p>
-          <div className="flex flex-1 justify-center md:justify-end gap-6 text-[11px] text-white/20">
-            {["Docs", "GitHub", "Twitter"].map(link => (
-              <a key={link} href="#"
-                className="relative hover:text-white/52 transition-colors duration-200 group">
-                {link}
-                <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-white/22 group-hover:w-full transition-all duration-300" />
+
+          {/* Bottom row: Social icons left + Copyright right */}
+          <div className="flex flex-col md:flex-row items-end justify-between gap-4 mt-auto pt-10">
+            {/* Social icons */}
+            <div className="flex items-center gap-2.5">
+              {/* X (Twitter) */}
+              <a href="#" className="w-[30px] h-[30px] rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors duration-200" style={{ background: "rgba(255,255,255,0.1)" }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
               </a>
-            ))}
+              {/* Discord */}
+              <a href="#" className="w-[30px] h-[30px] rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors duration-200" style={{ background: "rgba(255,255,255,0.1)" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
+                </svg>
+              </a>
+              {/* LinkedIn */}
+              <a href="#" className="w-[30px] h-[30px] rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors duration-200" style={{ background: "rgba(255,255,255,0.1)" }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                </svg>
+              </a>
+              {/* GitHub */}
+              <a href="#" className="w-[30px] h-[30px] rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors duration-200" style={{ background: "rgba(255,255,255,0.1)" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                </svg>
+              </a>
+            </div>
+
+            {/* Copyright */}
+            <p className="text-[11px] text-white/40 tracking-[0.08em]" style={{ fontFamily: "'JetBrains Mono', 'SF Mono', 'Fira Code', 'Courier New', monospace" }}>
+              © Sendra. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>

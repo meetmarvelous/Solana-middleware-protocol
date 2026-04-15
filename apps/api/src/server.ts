@@ -1,7 +1,9 @@
 import { serve } from "bun";
 
+const PORT = Number(process.env.PORT) || 3002;
+
 serve({
-    port: 3000,
+    port: PORT,
     fetch(req) {
         const url = new URL(req.url);
 
@@ -33,4 +35,4 @@ serve({
     },
 });
 
-console.log("Sendra API running on http://localhost:3000");
+console.log(`Sendra API running on http://localhost:${PORT}`);
