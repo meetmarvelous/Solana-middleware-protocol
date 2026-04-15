@@ -1295,7 +1295,7 @@ export default function SendraPage() {
             {/* Large logo + brand name */}
             <div className="flex items-center gap-4">
               <img src="/logo.png" alt="Sendra Logo" width={56} height={56} className="rounded-md object-contain" />
-              <span className="text-white font-semibold text-[46px] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif" }}>Sendra</span>
+              <span className="text-white font-semibold text-[46px] tracking-[-0.02em] leading-none">Sendra</span>
             </div>
 
             {/* Navigation links — stacked column, left-aligned, monospace, uppercase */}
@@ -1304,8 +1304,7 @@ export default function SendraPage() {
                 <a
                   key={link}
                   href="#"
-                  className="text-[12.5px] text-white/70 uppercase hover:text-white transition-colors duration-200"
-                  style={{ fontFamily: "'JetBrains Mono', 'SF Mono', 'Fira Code', 'Courier New', monospace", letterSpacing: "0.14em" }}
+                  className="font-mono text-[12.5px] text-white/70 uppercase tracking-[0.14em] hover:text-white transition-colors duration-200"
                 >
                   {link}
                 </a>
@@ -1344,7 +1343,7 @@ export default function SendraPage() {
             </div>
 
             {/* Copyright */}
-            <p className="text-[11px] text-white/40 tracking-[0.08em]" style={{ fontFamily: "'JetBrains Mono', 'SF Mono', 'Fira Code', 'Courier New', monospace" }}>
+            <p className="font-mono text-[11px] text-white/40 tracking-[0.08em]">
               © Sendra. All rights reserved.
             </p>
           </div>
