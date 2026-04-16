@@ -1,52 +1,147 @@
-import { SendraOptions, SendraParams, Signer } from "@repo/types";
+import { LogEvent, logs, SendraOptions, SendraParams, Signer } from "@repo/types";
 import { selectRpc } from "@repo/router"
 import { SimulateTx } from "@repo/simulator";
 import { SendTx } from "@repo/rpc-client"
 import { BuildTx } from "@repo/tx-builder";
 import { optimizeFee } from "@repo/fee-optimizer";
 import { ConfirmTx } from "@repo/logger";
+import { logEvent } from "@repo/logger";
 
 export async function SendWithReliability(params: SendraParams, signer: Signer, options: SendraOptions) {
+    let attempt = 0;
+    const logs: logs = [];
     const rpc = await selectRpc();
+    logEvent({
+        step: "RPC_SELECTED",
+        rpc: rpc.url,
+    }, logs);
+
     const tx = await BuildTx(rpc, signer, params);
+    logEvent({
+        step: "TX_BUILT",
+        rpc: rpc.url
+    }, logs);
+
     const optimisedTx = await optimizeFee(tx, rpc);
+    logEvent({
+        step: "FEE_OPTIMIZED",
+        fee: optimisedTx.fee
+    }, logs);
+
     const simulateResult = await SimulateTx(optimisedTx.transaction, rpc, signer);
     if (!simulateResult.success) {
-        return { success: false, error: simulateResult.error };
+        logEvent({
+            step: "SIMULATION_FAILED",
+            message: "failed"
+        }, logs);
+        return { success: false, error: simulateResult.error, logs };
     }
+    logEvent({
+        step: "SIMULATION_SUCCESS",
+        message: "success"
+    }, logs);
+
     const signedTx = await signer.signTransaction(simulateResult.transaction);
+    logEvent({
+        step: "TX_SIGNED",
+        attempt: attempt,
+        rpc: rpc.url
+    }, logs);
     const signature = await SendTx(signedTx, rpc);
+    logEvent({
+        step: "TX_SENT",
+        attempt: attempt,
+        rpc: rpc.url
+    }, logs);
     const result = await ConfirmTx(rpc, signature);
     if (result.success) {
-        return result;
+        logEvent({
+            step: "TX_CONFIRMED",
+            rpc: rpc.url,
+        }, logs);
+        return { ...result, logs };
     }
-    let attempt = 0;
     let lastFee = optimisedTx.fee;
-
+    logEvent({
+        step: "INITIAL_ATTEMPT_FAILED",
+        attempt: attempt,
+        message: "starting retries"
+    }, logs);
     while (attempt < options.maxRetries) {
+        attempt++;
+        logEvent({
+            step: "RETRY_ATTEMPT",
+            attempt: attempt
+        }, logs);
+
         const currentRpc = await selectRpc();
+        logEvent({
+            step: "RPC_SELECTED",
+            attempt: attempt,
+            rpc: currentRpc.url
+        }, logs);
         const newTx = await BuildTx(currentRpc, signer, params);
+        logEvent({
+            step: "TX_BUILT",
+            rpc: currentRpc.url,
+        }, logs);
 
         const reOptimized = await optimizeFee(newTx, currentRpc, lastFee);
+        logEvent({
+            step: "FEE_REOPTIMIZED",
+            attempt: attempt,
+            fee: reOptimized.fee
+        }, logs);
         lastFee = reOptimized.fee;
 
-        const sim = await SimulateTx(reOptimized.transaction, rpc, signer);
+        const sim = await SimulateTx(reOptimized.transaction, currentRpc, signer);
         if (!sim.success) {
-            return { success: false, error: sim.error };
+            logEvent({
+                step: "RETRY_SIMULATION_FAILED",
+                attempt: attempt,
+                message: "failed"
+            }, logs);
+            return { success: false, error: sim.error, logs };
         }
+        logEvent({
+            step: "RETRY_SIMULATION_SUCCESS",
+            attempt: attempt,
+            message: "success"
+        }, logs);
 
         const signedTx = await signer.signTransaction(sim.transaction);
-        const signature = await SendTx(signedTx, rpc);
-        const result = await ConfirmTx(rpc, signature);
+        logEvent({
+            step: "TX_SIGNED",
+            rpc: currentRpc.url,
+        }, logs);
+        const signature = await SendTx(signedTx, currentRpc);
+        logEvent({
+            step: "RETRY_TX_SENT",
+            attempt: attempt,
+            rpc: currentRpc.url
+        }, logs);
+        const result = await ConfirmTx(currentRpc, signature);
+        logEvent({
+            step: "RETRY_STATUS",
+            attempt: attempt,
+            message: result.success ? "confirmed" : "failed"
+        }, logs);
 
         if (result.success) {
-            return result;
+            logEvent({
+                step: "SUCCESS",
+                attempt: attempt
+            }, logs);
+            return { ...result, logs };
         }
-
-        attempt++;
     }
+    logEvent({
+        step: "MAX_RETRIES_EXCEEDED",
+        attempt: attempt
+    }, logs);
     return {
         success: false,
-        error: "Max retries reached"
+        error: "Max retries reached",
+        logs
     };
 }

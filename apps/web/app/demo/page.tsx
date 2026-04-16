@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { PublicKey, Connection, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
-import { sendWithReliability } from "@repo/sdk";
+import { SendWithReliability } from "@repo/sdk";
 import SendraFlowDiagram from "../components/SendraFlowDiagram";
 
 // --- Icons ---
@@ -42,7 +42,7 @@ function DecoderText({ text, isHovered }: { text: string; isHovered: boolean }) 
     let iteration = 0;
     const charsPerTick = Math.max(text.length / 20, 0.2);
     let interval: ReturnType<typeof setInterval>;
-    
+
     const tick = () => {
       let newText = "";
       for (let i = 0; i < text.length; i++) {
@@ -56,15 +56,15 @@ function DecoderText({ text, isHovered }: { text: string; isHovered: boolean }) 
           newText += DECODE_CHARS[randomIndex];
         }
       }
-      
+
       setDisplayText(newText);
-      
+
       if (iteration >= text.length) {
-          clearInterval(interval);
+        clearInterval(interval);
       }
       iteration += charsPerTick;
     };
-    
+
     interval = setInterval(tick, 30);
     return () => clearInterval(interval);
   }, [isHovered, text]);
@@ -145,16 +145,6 @@ export default function DemoPage() {
   const [sdkLogs, setSdkLogs] = useState<any[]>([]);
   const [isSendraTx, setIsSendraTx] = useState(false);
 
-  const playLogs = (logsToPlay: any[]) => {
-    let i = 0;
-    setSdkLogs([]);
-    const interval = setInterval(() => {
-      setSdkLogs(prev => [...prev, logsToPlay[i]]);
-      i++;
-      if (i >= logsToPlay.length) clearInterval(interval);
-    }, 400);
-  };
-
   const pushLog = (type: "info" | "success" | "error" | "warn", message: string) => {
     const time = new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
     setLogs(prev => [...prev, { type, message, time, id: Math.random() }]);
@@ -179,7 +169,7 @@ export default function DemoPage() {
 
     try {
       const signer = { publicKey, signTransaction };
-      const res = await sendWithReliability(
+      const res = await SendWithReliability(
         { receiver: new PublicKey(receiver), amount: Number(amount) },
         signer,
         { maxRetries: 3 }
@@ -188,11 +178,11 @@ export default function DemoPage() {
       if (res.success) {
         setResult(res);
         pushLog("success", `Landed in slot! Sig: ${res.signature?.slice(0, 8)}...`);
-        if (res.logs) playLogs(res.logs);
+        if (res.logs) setSdkLogs(res.logs);
       } else {
         pushLog("error", `Failed: ${res.error}`);
         setResult(res);
-        if (res.logs) playLogs(res.logs);
+        if (res.logs) setSdkLogs(res.logs);
       }
     } catch (e: any) {
       pushLog("error", `Fatal: ${e.message}`);
@@ -239,19 +229,11 @@ export default function DemoPage() {
       }).compileToV0Message();
       const tx = new VersionedTransaction(message);
 
-      const initialLogs = [
-        { step: "SELECTED_RPC", message: "Standard Devnet RPC selected", rpc: rpcUrl },
-        { step: "BUILD_TX", message: "Built Transaction" },
-      ];
-      setSdkLogs(initialLogs);
-
       pushLog("info", "Requesting signature...");
       const signedTx = await signTransaction(tx);
-      setSdkLogs(prev => [...prev, { step: "SIGN_TX", message: "Signed Transaction" }]);
 
       pushLog("info", "Sending transaction...");
       const signature = await connection.sendTransaction(signedTx);
-      setSdkLogs(prev => [...prev, { step: "SEND_TX", message: "Sent Transaction", rpc: rpcUrl, attempt: 1 }]);
 
       pushLog("info", "Waiting for confirmation...");
       const confirmation = await connection.confirmTransaction({
@@ -266,12 +248,10 @@ export default function DemoPage() {
 
       setResult({ success: true, signature, attempts: 1 });
       pushLog("success", `Landed in slot! Sig: ${signature.slice(0, 8)}...`);
-      setSdkLogs(prev => [...prev, { step: "CONFIRM_TX", message: "Confirmed Transaction: Success" }]);
 
     } catch (e: any) {
       pushLog("error", `Failed: ${e.message}`);
       setResult({ success: false, error: e.message, attempts: 1 });
-      setSdkLogs(prev => [...prev, { step: "FAIL_TX", message: `Transaction Failed: ${e.message}` }]);
     } finally {
       setLoading(false);
     }
@@ -469,7 +449,21 @@ export default function DemoPage() {
                             {log.attempt !== undefined && <span className="text-white/20 text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10">Attempt {log.attempt}</span>}
                           </div>
                           <span className="text-white/70">{log.message}</span>
-                          {log.rpc && <span className="text-white/30 text-[9.5px] truncate mt-0.5 break-all">RPC: {log.rpc}</span>}
+                          {log.step === "RETRY" && (
+                            <span className="text-amber-400 text-[10px] mt-0.5">
+                              Reason: {log.message}
+                            </span>
+                          )}
+                          {log.rpc && (
+                            <span className="text-white/30 text-[9.5px] truncate mt-0.5 break-all">
+                              RPC: {log.rpc}
+                            </span>
+                          )}
+                          {log.fee && (
+                            <span className="text-white/30 text-[9.5px] mt-0.5">
+                              Fee: {log.fee}
+                            </span>
+                          )}
                         </motion.div>
                       ))}
                     </div>
