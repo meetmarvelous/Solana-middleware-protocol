@@ -1,4 +1,4 @@
-export { sendWithReliability } from "@repo/core";
+export { SendWithReliability } from "@repo/core";
 
 export type {
     SendraParams,

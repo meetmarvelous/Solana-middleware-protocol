@@ -42,15 +42,29 @@ function DecoderText({ text, isHovered }: { text: string; isHovered: boolean }) 
     let iteration = 0;
     const charsPerTick = Math.max(text.length / 20, 0.2);
     let interval: ReturnType<typeof setInterval>;
+    
     const tick = () => {
-      setDisplayText(() => text.split("").map((char, index) => {
-        if (char === " ") return " ";
-        if (index < iteration) return text[index];
-        return DECODE_CHARS[Math.floor(Math.random() * DECODE_CHARS.length)];
-      }).join(""));
-      if (iteration >= text.length) clearInterval(interval);
+      let newText = "";
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        if (char === " ") {
+          newText += " ";
+        } else if (i < iteration) {
+          newText += text[i];
+        } else {
+          const randomIndex = Math.floor(Math.random() * DECODE_CHARS.length);
+          newText += DECODE_CHARS[randomIndex];
+        }
+      }
+      
+      setDisplayText(newText);
+      
+      if (iteration >= text.length) {
+          clearInterval(interval);
+      }
       iteration += charsPerTick;
     };
+    
     interval = setInterval(tick, 30);
     return () => clearInterval(interval);
   }, [isHovered, text]);
