@@ -10,13 +10,14 @@ import { logEvent } from "@repo/logger";
 export async function SendWithReliability(params: SendraParams, signer: Signer, options: SendraOptions) {
     let attempt = 0;
     const logs: logs = [];
+
     const rpc = await selectRpc();
     logEvent({
         step: "RPC_SELECTED",
         rpc: rpc.url,
     }, logs);
 
-    const tx = await BuildTx(rpc, signer, params);
+    const { tx, lastValidBlockHeight } = await BuildTx(rpc, signer, params);
     logEvent({
         step: "TX_BUILT",
         rpc: rpc.url
@@ -47,26 +48,55 @@ export async function SendWithReliability(params: SendraParams, signer: Signer, 
         attempt: attempt,
         rpc: rpc.url
     }, logs);
-    const signature = await SendTx(signedTx, rpc);
-    logEvent({
-        step: "TX_SENT",
-        attempt: attempt,
-        rpc: rpc.url
-    }, logs);
-    const result = await ConfirmTx(rpc, signature);
-    if (result.success) {
+
+    let sendFailed = false;
+    let signature;
+
+    try {
+        signature = await SendTx(signedTx, rpc);
         logEvent({
-            step: "TX_CONFIRMED",
-            rpc: rpc.url,
+            step: "TX_SENT",
+            attempt: attempt,
+            rpc: rpc.url
         }, logs);
-        return { ...result, logs };
+    } catch (error: any) {
+        if (error.message?.includes("Blockhash not found")) {
+            logEvent({
+                step: "BLOCKHASH_EXPIRED",
+                attempt,
+                rpc: rpc.url
+            }, logs);
+
+            sendFailed = true;
+        } else {
+            logEvent({
+                step: "SEND_FAILED",
+                attempt: attempt,
+                rpc: rpc.url,
+                message: error.message
+            }, logs);
+            throw error;
+        }
     }
+
+    if (!sendFailed) {
+        const result = await ConfirmTx(rpc, signature!, lastValidBlockHeight);
+        if (result.success) {
+            logEvent({
+                step: "TX_CONFIRMED",
+                rpc: rpc.url,
+            }, logs);
+            return { ...result, logs };
+        }
+    }
+
     let lastFee = optimisedTx.fee;
     logEvent({
         step: "INITIAL_ATTEMPT_FAILED",
         attempt: attempt,
         message: "starting retries"
     }, logs);
+
     while (attempt < options.maxRetries) {
         attempt++;
         logEvent({
@@ -80,7 +110,8 @@ export async function SendWithReliability(params: SendraParams, signer: Signer, 
             attempt: attempt,
             rpc: currentRpc.url
         }, logs);
-        const newTx = await BuildTx(currentRpc, signer, params);
+
+        const { tx: newTx, lastValidBlockHeight } = await BuildTx(currentRpc, signer, params);
         logEvent({
             step: "TX_BUILT",
             rpc: currentRpc.url,
@@ -114,13 +145,37 @@ export async function SendWithReliability(params: SendraParams, signer: Signer, 
             step: "TX_SIGNED",
             rpc: currentRpc.url,
         }, logs);
-        const signature = await SendTx(signedTx, currentRpc);
-        logEvent({
-            step: "RETRY_TX_SENT",
-            attempt: attempt,
-            rpc: currentRpc.url
-        }, logs);
-        const result = await ConfirmTx(currentRpc, signature);
+
+        let signature;
+
+        try {
+            signature = await SendTx(signedTx, currentRpc);
+            logEvent({
+                step: "TX_SENT",
+                attempt: attempt,
+                rpc: currentRpc.url
+            }, logs);
+        } catch (error: any) {
+            if (error.message?.includes("Blockhash not found")) {
+                logEvent({
+                    step: "RETRY_BLOCKHASH_EXPIRED",
+                    attempt,
+                    rpc: currentRpc.url
+                }, logs);
+
+                continue;
+            } else {
+                logEvent({
+                    step: "RETRY_SEND_FAILED",
+                    attempt,
+                    rpc: currentRpc.url,
+                    message: error.message
+                }, logs);
+                throw error;
+            }
+        }
+
+        const result = await ConfirmTx(currentRpc, signature!, lastValidBlockHeight);
         logEvent({
             step: "RETRY_STATUS",
             attempt: attempt,
