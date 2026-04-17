@@ -43,20 +43,22 @@ export default function Hero({ heroRef, heroY, heroOpacity }: { heroRef: any, he
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.75, delay: 0.07, ease: [0.21, 0.47, 0.32, 0.98] }}
-                        className="text-[60px] md:text-[84px] font-semibold leading-[1.05] tracking-tight max-w-4xl mx-auto mb-6 text-white"
+                        className="text-[60px] md:text-[84px] font-semibold leading-[1.05] tracking-tight max-w-5xl mx-auto mb-6 text-white"
                     >
-                        Transactions that don't fail.
+                        Transactions that don't fail
                     </motion.h1>
 
                     {/* Subtext */}
-                    <motion.p
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.17 }}
-                        className="text-white/60 text-[18px] md:text-[20px] max-w-[700px] mx-auto leading-relaxed mb-10"
+                        className="text-white/60 text-[13px] md:text-[17px] max-w-[780px] mx-auto leading-[1.6] mb-10 font-medium"
                     >
-                        Sendra ensures every Solana transaction lands — with simulation, smart routing, and automatic retries.
-                    </motion.p>
+                        <span className="text-[15px] font-medium text-white tracking-wide leading-none uppercase">Sendra ensures Solana transactions land reliably across varying network conditions. </span><br />
+                        It is the execution layer that sits between your app and the blockchain network,
+                        optimizing fees, routing RPCs, and retrying until your transaction succeeds.
+                    </motion.div>
 
                     {/* CTAs */}
                     <motion.div
