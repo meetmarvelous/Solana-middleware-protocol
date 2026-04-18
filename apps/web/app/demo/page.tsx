@@ -77,7 +77,7 @@ const Icons = {
   ),
   Changelog: () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+      <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
     </svg>
   ),
   ExternalLink: () => (
@@ -179,7 +179,7 @@ export default function DemoPage() {
       const signer = { publicKey, signTransaction };
       pushLog("info", "Step 2/6: Sending to Sendra SDK — routing begins now...");
       const res = await SendWithReliability(
-        { receiver: new PublicKey(receiver), amount: Number(amount) },
+        { type: "params", to: new PublicKey(receiver), amount: Number(amount) },
         signer,
         { maxRetries: 3 }
       ) as any;
@@ -350,11 +350,10 @@ export default function DemoPage() {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[12px] font-mono transition-all text-left w-full ${
-                  activeTab === item.id
+                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[12px] font-mono transition-all text-left w-full ${activeTab === item.id
                     ? "bg-white/[0.06] text-white/80 border border-white/[0.08]"
                     : "text-white/25 hover:text-white/40 hover:bg-white/[0.02] border border-transparent"
-                }`}
+                  }`}
               >
                 <span className={activeTab === item.id ? "text-indigo-400/80" : "text-white/20"}>{item.icon}</span>
                 {item.label}
@@ -646,9 +645,8 @@ export default function DemoPage() {
                           if (showRetry && !isRetryActive && !sdkLogs.some(l => l.step === "RETRY")) return null;
 
                           return (
-                            <div key={stage.id} className={`flex items-center gap-2.5 py-[5px] px-2 rounded transition-all duration-300 ${
-                              isActive ? "bg-indigo-500/[0.08]" : ""
-                            }`}>
+                            <div key={stage.id} className={`flex items-center gap-2.5 py-[5px] px-2 rounded transition-all duration-300 ${isActive ? "bg-indigo-500/[0.08]" : ""
+                              }`}>
                               {/* Dot */}
                               <div className="flex-shrink-0 w-4 flex items-center justify-center">
                                 {isActive ? (
@@ -662,12 +660,11 @@ export default function DemoPage() {
                                 )}
                               </div>
                               {/* Label */}
-                              <span className={`text-[10px] font-mono font-bold tracking-wider flex-1 ${
-                                isActive ? "text-indigo-400" :
-                                isDone || isAllDone ? "text-white/45" :
-                                isRetryActive ? "text-amber-400" :
-                                "text-white/15"
-                              }`}>{stage.label}</span>
+                              <span className={`text-[10px] font-mono font-bold tracking-wider flex-1 ${isActive ? "text-indigo-400" :
+                                  isDone || isAllDone ? "text-white/45" :
+                                    isRetryActive ? "text-amber-400" :
+                                      "text-white/15"
+                                }`}>{stage.label}</span>
                               {/* Desc (compact) */}
                               <span className={`text-[8px] font-mono ${isActive ? "text-white/25" : "text-white/8"}`}>
                                 {stage.desc}
@@ -998,26 +995,23 @@ export default function DemoPage() {
                     ].map((release, ri) => (
                       <div key={release.version} className="relative pl-8">
                         {ri < 2 && <div className="absolute left-[11px] top-8 bottom-0 w-px bg-white/[0.06]" />}
-                        <div className={`absolute left-0 top-1.5 w-[23px] h-[23px] rounded-full flex items-center justify-center border ${
-                          release.tag === "Latest" ? "border-white/20" :
-                          release.tag === "Major" ? "border-white/12" :
-                          "border-white/[0.08]"
-                        }`} style={{ background: "rgba(255,255,255,0.03)" }}>
-                          <div className={`w-2 h-2 rounded-full ${
-                            release.tag === "Latest" ? "bg-white/60" :
-                            release.tag === "Major" ? "bg-white/30" :
-                            "bg-white/15"
-                          }`} />
+                        <div className={`absolute left-0 top-1.5 w-[23px] h-[23px] rounded-full flex items-center justify-center border ${release.tag === "Latest" ? "border-white/20" :
+                            release.tag === "Major" ? "border-white/12" :
+                              "border-white/[0.08]"
+                          }`} style={{ background: "rgba(255,255,255,0.03)" }}>
+                          <div className={`w-2 h-2 rounded-full ${release.tag === "Latest" ? "bg-white/60" :
+                              release.tag === "Major" ? "bg-white/30" :
+                                "bg-white/15"
+                            }`} />
                         </div>
 
                         <div className="pb-10">
                           <div className="flex items-center gap-3 mb-3">
                             <span className="text-[16px] font-mono text-white/70 font-bold">{release.version}</span>
-                            <span className={`px-2 py-0.5 rounded text-[8px] font-mono uppercase tracking-wider border ${
-                              release.tag === "Latest" ? "border-white/15 text-white/50" :
-                              release.tag === "Major" ? "border-white/10 text-white/30" :
-                              "border-white/[0.06] text-white/20"
-                            }`} style={{ background: "rgba(255,255,255,0.03)" }}>{release.tag}</span>
+                            <span className={`px-2 py-0.5 rounded text-[8px] font-mono uppercase tracking-wider border ${release.tag === "Latest" ? "border-white/15 text-white/50" :
+                                release.tag === "Major" ? "border-white/10 text-white/30" :
+                                  "border-white/[0.06] text-white/20"
+                              }`} style={{ background: "rgba(255,255,255,0.03)" }}>{release.tag}</span>
                             <span className="text-[10px] font-mono text-white/15 ml-auto">{release.date}</span>
                           </div>
                           <div className="space-y-1.5">
