@@ -39,7 +39,6 @@ Observability is crucial for backend services. We recommend piping the Sendra `l
 ```typescript
 await SendWithReliability(params, signer, {
   logger: (e) => {
-    // Structured logging for better debugging
     console.log(JSON.stringify({ 
       service: 'sendra-engine', 
       step: e.step, 

@@ -37,7 +37,6 @@ import { SendWithReliability } from "@sendra/sdk";
 import { SystemProgram, TransactionInstruction, PublicKey } from "@solana/web3.js";
 
 async function executePayment(sender: PublicKey, receiver: PublicKey, lamports: number) {
-  // 1. Define your intent (Standard Instructions)
   const instructions = [
     SystemProgram.transfer({
       fromPubkey: sender,
@@ -46,16 +45,13 @@ async function executePayment(sender: PublicKey, receiver: PublicKey, lamports: 
     })
   ];
 
-  // 2. Execute with Sendra
-  // The SDK manages the blockhash, the fee optimization, 
-  // and the recursive retry logic automatically.
   const { success, signature, error, attempts } = await SendWithReliability(
     {
       type: "params",
       instructions,
       payer: sender
     },
-    // Non-custodial signer abstraction
+
     wallet, 
     { 
       maxRetries: 10,

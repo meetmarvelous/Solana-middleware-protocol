@@ -67,7 +67,6 @@ export function TxTracker() {
         border: "1px solid rgba(255,255,255,0.06)",
       }}
     >
-      {/* Header */}
       <div
         className="px-4 py-3 border-b flex items-center gap-2"
         style={{ borderColor: "rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.015)" }}
@@ -80,7 +79,6 @@ export function TxTracker() {
       </div>
 
       <div className="p-4 space-y-3">
-        {/* Input */}
         <div className="flex gap-2">
           <input
             type="text"
@@ -121,7 +119,6 @@ export function TxTracker() {
           </motion.button>
         </div>
 
-        {/* Result */}
         <AnimatePresence mode="wait">
           {result && cfg && (
             <motion.div
@@ -132,7 +129,6 @@ export function TxTracker() {
               className="rounded-lg p-3 space-y-2.5"
               style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}
             >
-              {/* Status badge */}
               <div className="flex items-center gap-2">
                 <motion.div
                   className="w-1.5 h-1.5 rounded-full flex-shrink-0"
@@ -145,7 +141,6 @@ export function TxTracker() {
                 </span>
               </div>
 
-              {/* Details grid */}
               <div className="grid grid-cols-2 gap-2">
                 {result.slot && (
                   <div>
@@ -167,7 +162,6 @@ export function TxTracker() {
                 )}
               </div>
 
-              {/* Signature */}
               <div>
                 <div className="text-[8.5px] text-white/20 font-mono uppercase tracking-widest mb-0.5">Signature</div>
                 <div className="text-[9.5px] font-mono text-white/28 truncate">{result.signature}</div>

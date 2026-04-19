@@ -8,7 +8,6 @@ export default function Blog() {
                 <Divider />
                 <div className="max-w-7xl mx-auto px-6 py-24">
                     <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-12 lg:gap-16">
-                        {/* Left heading */}
                         <div>
                             <div className="inline-block px-3 py-1 rounded border border-white/[0.08] text-[11px] font-mono text-white/30 tracking-wider mb-6">
                                 Our Blog
@@ -18,7 +17,6 @@ export default function Blog() {
                             </h2>
                         </div>
 
-                        {/* Right — 2 blog cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {[
                                 {
@@ -46,7 +44,6 @@ export default function Blog() {
                                         background: "linear-gradient(160deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.008) 100%)",
                                     }}
                                 >
-                                    {/* Card image area */}
                                     <div className="relative w-full h-52 overflow-hidden">
                                         <img
                                             src="/hero_bg.jpg"
@@ -57,7 +54,6 @@ export default function Blog() {
                                         <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.7) 100%)" }} />
                                     </div>
 
-                                    {/* Card body */}
                                     <div className="flex flex-col flex-1 p-6">
                                         <div className="inline-block self-start px-2.5 py-1 rounded border border-white/[0.08] text-[10px] font-mono text-white/35 tracking-wider mb-4">
                                             {post.tag}

@@ -16,7 +16,6 @@ export default function CTABanner() {
                         className="relative rounded-2xl overflow-hidden"
                         style={{ border: "1px solid rgba(255,255,255,0.06)" }}
                     >
-                        {/* Background image */}
                         <div className="absolute inset-0">
                             <img
                                 src="/hero_bg.jpg"
@@ -27,7 +26,6 @@ export default function CTABanner() {
                             <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.25)" }} />
                         </div>
 
-                        {/* Content */}
                         <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 py-20 md:py-28">
                             <h2 className="text-3xl md:text-[42px] font-light text-white mb-8 leading-tight tracking-tight">
                                 Ready to stop losing transactions?

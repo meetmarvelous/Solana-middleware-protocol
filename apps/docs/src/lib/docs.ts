@@ -10,38 +10,32 @@ interface DocData {
   slug: string;
 }
 
-/**
- * A more robust markdown-to-html transformer to handle lists, bold, 
- * and structural rhythm correctly.
- */
 function markdownToHtml(markdown: string): string {
   let html = markdown;
 
-  // 1. Code blocks (Hide from other rules)
   const codeBlocks: string[] = [];
   html = html.replace(/```(typescript|tsx|bash|env|json|rust|python|go)?\n([\s\S]*?)```/gm, (_, lang, code) => {
     const placeholder = `CODE_BLOCK_PLACEHOLDER_${codeBlocks.length}`;
     const escapedCode = code.trim().replace(/'/g, "&apos;");
-    
+
     if (lang === 'bash') {
-        const isMulti = code.trim().startsWith("[multi]");
-        const commandMap = isMulti 
-            ? {
-                pnpm: code.trim().split("\n")[1] || "",
-                npm: code.trim().split("\n")[2] || "",
-                yarn: code.trim().split("\n")[3] || "",
-                bun: code.trim().split("\n")[4] || ""
-              }
-            : { pnpm: code.trim() };
-        
-        codeBlocks.push(`@@@COMMAND_BLOCK:${JSON.stringify(commandMap)}@@@`);
+      const isMulti = code.trim().startsWith("[multi]");
+      const commandMap = isMulti
+        ? {
+          pnpm: code.trim().split("\n")[1] || "",
+          npm: code.trim().split("\n")[2] || "",
+          yarn: code.trim().split("\n")[3] || "",
+          bun: code.trim().split("\n")[4] || ""
+        }
+        : { pnpm: code.trim() };
+
+      codeBlocks.push(`@@@COMMAND_BLOCK:${JSON.stringify(commandMap)}@@@`);
     } else {
-        codeBlocks.push(`@@@CODE_BLOCK:${lang || 'text'}:${Buffer.from(code.trim()).toString('base64')}@@@`);
+      codeBlocks.push(`@@@CODE_BLOCK:${lang || 'text'}:${Buffer.from(code.trim()).toString('base64')}@@@`);
     }
     return placeholder;
   });
 
-  // 2. Headings
   html = html.replace(/^#\s+(.+)$/gm, "<h1>$1</h1>");
   html = html.replace(/^##\s+(.+)$/gm, (_, title) => {
     const id = title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
@@ -49,7 +43,6 @@ function markdownToHtml(markdown: string): string {
   });
   html = html.replace(/^###\s+(.+)$/gm, "<h3>$1</h3>");
 
-  // 3. Lists (State-based parsing to handle multi-line and contiguous items)
   const lines = html.split('\n');
   const resultLines: string[] = [];
   let inList = false;
@@ -63,18 +56,18 @@ function markdownToHtml(markdown: string): string {
         resultLines.push('<ul>');
         inList = true;
       }
-      
+
       let itemContent = listMatch[2];
-      
-      // Look ahead for multiline description
-      while (i + 1 < lines.length && 
-             lines[i + 1].trim() !== "" && 
-             !lines[i + 1].match(/^(\s*)\-\s+/) &&
-             !lines[i + 1].startsWith('#')) {
+
+
+      while (i + 1 < lines.length &&
+        lines[i + 1].trim() !== "" &&
+        !lines[i + 1].match(/^(\s*)\-\s+/) &&
+        !lines[i + 1].startsWith('#')) {
         itemContent += ' ' + lines[i + 1].trim();
         i++;
       }
-      
+
       resultLines.push(`<li>${itemContent}</li>`);
     } else {
       if (inList && line.trim() === "") {
@@ -87,32 +80,27 @@ function markdownToHtml(markdown: string): string {
   if (inList) resultLines.push('</ul>');
   html = resultLines.join('\n');
 
-  // 4. Blockquotes
   html = html.replace(/^\>\s+(.+)$/gm, "<blockquote>$1</blockquote>");
 
-  // 5. Paragraphs & Block Separation
   html = html.split(/\n\n+/).map(block => {
     block = block.trim();
     if (!block) return "";
-    
-    // If it's already a component or block tag, don't wrap in <p>
-    if (block.startsWith("<h") || 
-        block.startsWith("<ul") || 
-        block.startsWith("<pre") || 
-        block.startsWith("<blockquote") || 
-        block.startsWith("CODE_BLOCK_PLACEHOLDER")) {
+
+
+    if (block.startsWith("<h") ||
+      block.startsWith("<ul") ||
+      block.startsWith("<pre") ||
+      block.startsWith("<blockquote") ||
+      block.startsWith("CODE_BLOCK_PLACEHOLDER")) {
       return block;
     }
-    
+
     return `<p>${block.replace(/\n/g, " ")}</p>`;
   }).join("\n\n");
 
-  // 6. Inline elements (Bold, Inline Code)
-  // Processed last to ensure content within block elements is formatted
   html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
   html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
 
-  // 7. Re-inject Code Blocks
   codeBlocks.forEach((block, i) => {
     html = html.replace(`CODE_BLOCK_PLACEHOLDER_${i}`, block);
   });
@@ -140,7 +128,6 @@ export function getDocBySlug(slug: string): DocData | null {
     rawContent = `<h1>${navItem.title}</h1><p>Content for ${navItem.title} is coming soon.</p>`;
   }
 
-  // Pre-generate TOC before we strip H1 from the HTML logic
   const toc: TocEntry[] = [];
   const headingRegex = /^##\s+(.+)$/gm;
   let match;

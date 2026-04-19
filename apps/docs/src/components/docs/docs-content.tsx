@@ -4,6 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { CommandBox } from "@/components/docs/command-box";
 import { CodeSnippet } from "@/components/docs/code-snippet";
+import { CodeSnippetTabs } from "@/components/docs/code-snippet-tabs";
 import type { DocFrontmatter } from "@/types/docs";
 
 interface DocsContentProps {
@@ -17,16 +18,15 @@ export function DocsContent({
   frontmatter,
   className,
 }: DocsContentProps) {
-  
-  // Split the content into parts: HTML strings and Component markers
+
   const parts = React.useMemo(() => {
     if (typeof content !== "string") return [content];
-    
+
     return content.split(/(@@@[A-Z_]+:.*?@@@)/g).filter(Boolean);
   }, [content]);
 
   const renderPart = (part: string, index: number) => {
-    // 1. Check for Command Block
+
     if (part.startsWith("@@@COMMAND_BLOCK:")) {
       try {
         const data = part.replace("@@@COMMAND_BLOCK:", "").replace("@@@", "");
@@ -38,24 +38,29 @@ export function DocsContent({
       }
     }
 
-    // 2. Check for Code Block
+
     if (part.startsWith("@@@CODE_BLOCK:")) {
-        try {
-            const data = part.replace("@@@CODE_BLOCK:", "").replace("@@@", "");
-            const [lang, base64Code] = data.split(":");
-            const code = atob(base64Code);
-            return <CodeSnippet key={index} code={code} language={lang} />;
-        } catch (e) {
-            console.error("Failed to parse code block", e);
-            return null;
-        }
+      try {
+        const data = part.replace("@@@CODE_BLOCK:", "").replace("@@@", "");
+        const [lang, base64Code] = data.split(":");
+        const code = atob(base64Code);
+        return <CodeSnippet key={index} code={code} language={lang} />;
+      } catch (e) {
+        console.error("Failed to parse code block", e);
+        return null;
+      }
     }
 
-    // 3. Fallback to standard HTML
+
+    if (part.startsWith("@@@CODE_TABS@@@")) {
+      return <CodeSnippetTabs key={index} />;
+    }
+
+
     return (
-      <div 
+      <div
         key={index}
-        dangerouslySetInnerHTML={{ __html: part }} 
+        dangerouslySetInnerHTML={{ __html: part }}
       />
     );
   };

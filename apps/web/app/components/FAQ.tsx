@@ -27,17 +27,14 @@ export function FAQSection() {
                                     onClick={() => setOpenIndex(isOpen ? null : i)}
                                     className="w-full flex items-center gap-4 py-5 text-left group"
                                 >
-                                    {/* Number */}
                                     <span className="text-[13px] font-mono text-white/20 flex-shrink-0 w-16 text-center">
                                         / {String(i + 1).padStart(2, "0")} /
                                     </span>
 
-                                    {/* Question */}
                                     <span className="flex-1 text-[14px] text-white/80 font-medium">
                                         {item.q}
                                     </span>
 
-                                    {/* Toggle icon */}
                                     <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-200"
                                         style={{
                                             background: "rgba(255,255,255,0.05)",
@@ -53,7 +50,6 @@ export function FAQSection() {
                                     </div>
                                 </button>
 
-                                {/* Answer */}
                                 <AnimatePresence initial={false}>
                                     {isOpen && (
                                         <motion.div

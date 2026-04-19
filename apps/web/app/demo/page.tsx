@@ -8,7 +8,6 @@ import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { PublicKey, Connection, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { SendWithReliability } from "@repo/sdk";
 
-// --- Icons ---
 const Icons = {
   Logo: () => (
     <img src="/logo.png" alt="Sendra Logo" width={32} height={32} className="rounded-md object-contain" />
@@ -87,7 +86,6 @@ const Icons = {
   ),
 };
 
-// --- Pipeline stages for the right sidebar tracker ---
 const PIPELINE_STAGES = [
   { id: "SELECT_RPC", label: "Select RPC", desc: "Optimal node routing" },
   { id: "BUILD_TX", label: "Build TX", desc: "Construct transaction payload" },
@@ -99,10 +97,8 @@ const PIPELINE_STAGES = [
   { id: "RETRY", label: "Retry", desc: "Auto-retry with new route" },
 ];
 
-// --- Sidebar Tab Type ---
 type SidebarTab = "dashboard" | "sdk-docs" | "problem-solution" | "architecture" | "changelog";
 
-// --- Transaction History Entry ---
 interface TxHistoryEntry {
   id: string;
   signature: string;
@@ -114,7 +110,6 @@ interface TxHistoryEntry {
   attempts: number;
 }
 
-// --- Main Dashboard Page ---
 export default function DemoPage() {
   const { connected, publicKey, signTransaction, disconnect } = useWallet();
   const { setVisible } = useWalletModal();
@@ -130,7 +125,6 @@ export default function DemoPage() {
   const [activeTab, setActiveTab] = useState<SidebarTab>("dashboard");
   const terminalRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll terminal
   useEffect(() => {
     if (terminalRef.current) {
       terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
@@ -274,7 +268,6 @@ export default function DemoPage() {
     return `${b58.slice(0, 4)}..${b58.slice(-4)}`;
   }, [connected, publicKey]);
 
-  // Determine current active pipeline stage from SDK logs
   const currentPipelineStep = useMemo(() => {
     if (!isSendraTx || sdkLogs.length === 0) return null;
     return sdkLogs[sdkLogs.length - 1]?.step || null;
@@ -284,7 +277,6 @@ export default function DemoPage() {
     return result !== null && !loading;
   }, [result, loading]);
 
-  // --- Sidebar Tab Items ---
   const sidebarItems: { id: SidebarTab; icon: React.ReactNode; label: string }[] = [
     { id: "dashboard", icon: <Icons.Dashboard />, label: "Dashboard" },
     { id: "sdk-docs", icon: <Icons.Docs />, label: "SDK Docs" },
@@ -296,7 +288,6 @@ export default function DemoPage() {
   return (
     <div className="h-screen w-screen bg-[#0a0a0f] text-white flex flex-col overflow-hidden">
 
-      {/* ══ Top Dashboard Bar ══ */}
       <header className="flex-shrink-0 h-[52px] flex items-center justify-between px-5 border-b border-white/[0.06]"
         style={{ background: "linear-gradient(180deg, rgba(15,15,22,1) 0%, rgba(10,10,15,0.95) 100%)" }}>
         <div className="flex items-center gap-3">
@@ -338,10 +329,8 @@ export default function DemoPage() {
         </div>
       </header>
 
-      {/* ══ Main Dashboard Body ══ */}
       <div className="flex-1 flex overflow-hidden">
 
-        {/* ── Left Sidebar (nav only) ── */}
         <aside className="flex-shrink-0 w-[200px] border-r border-white/[0.06] flex flex-col"
           style={{ background: "rgba(12,12,18,0.6)" }}>
 
@@ -351,8 +340,8 @@ export default function DemoPage() {
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[12px] font-mono transition-all text-left w-full ${activeTab === item.id
-                    ? "bg-white/[0.06] text-white/80 border border-white/[0.08]"
-                    : "text-white/25 hover:text-white/40 hover:bg-white/[0.02] border border-transparent"
+                  ? "bg-white/[0.06] text-white/80 border border-white/[0.08]"
+                  : "text-white/25 hover:text-white/40 hover:bg-white/[0.02] border border-transparent"
                   }`}
               >
                 <span className={activeTab === item.id ? "text-indigo-400/80" : "text-white/20"}>{item.icon}</span>
@@ -361,7 +350,6 @@ export default function DemoPage() {
             ))}
           </nav>
 
-          {/* TX count */}
           {txHistory.length > 0 && (
             <div className="px-3 pb-2">
               <div className="px-3 py-2 rounded-lg bg-white/[0.02] border border-white/[0.04]">
@@ -371,7 +359,6 @@ export default function DemoPage() {
             </div>
           )}
 
-          {/* Sendra SDK Branding */}
           <div className="px-3 pb-3">
             <div className="rounded-xl overflow-hidden border border-white/[0.06]" style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(15,15,25,0.9) 50%, rgba(16,185,129,0.06) 100%)" }}>
               <div className="px-3.5 py-3 flex items-center gap-2.5">
@@ -387,18 +374,14 @@ export default function DemoPage() {
           </div>
         </aside>
 
-        {/* ── Main Content Area (switches based on activeTab) ── */}
         <div className="flex-1 flex flex-col overflow-hidden">
           <AnimatePresence mode="wait">
 
-            {/* ═══════════════ DASHBOARD VIEW ═══════════════ */}
             {activeTab === "dashboard" && (
               <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="flex-1 flex flex-col overflow-hidden">
 
-                {/* Top Row: Input Panel + Network Status */}
                 <div className="flex-shrink-0 border-b border-white/[0.06]">
                   <div className="flex h-full">
-                    {/* Transaction Input Panel */}
                     <div className="flex-1 p-5 border-r border-white/[0.06]">
                       <div className="flex items-center gap-2 mb-4">
                         <Icons.Send />
@@ -434,7 +417,6 @@ export default function DemoPage() {
                         </div>
                       </div>
                     </div>
-                    {/* Network Status Panel */}
                     <div className="w-[280px] p-5 flex flex-col">
                       <div className="flex items-center gap-2 mb-4">
                         <Icons.Network />
@@ -465,10 +447,8 @@ export default function DemoPage() {
                   </div>
                 </div>
 
-                {/* Bottom Row: Console + Right Panel */}
                 <div className="flex-1 flex overflow-hidden">
 
-                  {/* Console Terminal */}
                   <div className="flex-1 flex flex-col border-r border-white/[0.06] overflow-hidden">
                     <div className="flex-shrink-0 flex items-center justify-between px-4 py-2.5 border-b border-white/[0.06]" style={{ background: "rgba(0,0,0,0.3)" }}>
                       <div className="flex items-center gap-3">
@@ -534,10 +514,8 @@ export default function DemoPage() {
                     </div>
                   </div>
 
-                  {/* Right Panel: Result + Pipeline + Trace */}
                   <div className="w-[360px] flex flex-col" style={{ background: "rgba(8,8,14,0.5)" }}>
 
-                    {/* Status Banner */}
                     <div className="flex-shrink-0 px-4 py-2 border-b border-white/[0.06]" style={{ background: "rgba(0,0,0,0.2)" }}>
                       <div className="flex items-center gap-2">
                         {loading ? (
@@ -559,7 +537,6 @@ export default function DemoPage() {
                       </div>
                     </div>
 
-                    {/* Transaction Result */}
                     <div className="flex-1 px-4 py-3 border-b border-white/[0.06] flex flex-col">
                       <div className="flex items-center gap-2 mb-2.5">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -568,7 +545,6 @@ export default function DemoPage() {
                         <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">Result</span>
                       </div>
                       <AnimatePresence mode="wait">
-                        {/* Result content fills available space */}
                         {loading ? (
                           <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                             className="flex items-center gap-3 p-3 rounded-lg border border-indigo-500/20 bg-indigo-500/[0.03]">
@@ -622,7 +598,6 @@ export default function DemoPage() {
                       </AnimatePresence>
                     </div>
 
-                    {/* ═══ Pipeline Progress Tracker ═══ */}
                     <div className="flex-1 px-4 py-3 border-b border-white/[0.06] flex flex-col">
                       <div className="flex items-center gap-2 mb-2">
                         <Icons.Flow />
@@ -647,7 +622,6 @@ export default function DemoPage() {
                           return (
                             <div key={stage.id} className={`flex items-center gap-2.5 py-[5px] px-2 rounded transition-all duration-300 ${isActive ? "bg-indigo-500/[0.08]" : ""
                               }`}>
-                              {/* Dot */}
                               <div className="flex-shrink-0 w-4 flex items-center justify-center">
                                 {isActive ? (
                                   <motion.div className="w-2 h-2 rounded-full bg-indigo-400" animate={{ scale: [1, 1.4, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 1.2, repeat: Infinity }} />
@@ -659,13 +633,11 @@ export default function DemoPage() {
                                   <div className="w-1.5 h-1.5 rounded-full border border-white/15" />
                                 )}
                               </div>
-                              {/* Label */}
                               <span className={`text-[10px] font-mono font-bold tracking-wider flex-1 ${isActive ? "text-indigo-400" :
-                                  isDone || isAllDone ? "text-white/45" :
-                                    isRetryActive ? "text-amber-400" :
-                                      "text-white/15"
+                                isDone || isAllDone ? "text-white/45" :
+                                  isRetryActive ? "text-amber-400" :
+                                    "text-white/15"
                                 }`}>{stage.label}</span>
-                              {/* Desc (compact) */}
                               <span className={`text-[8px] font-mono ${isActive ? "text-white/25" : "text-white/8"}`}>
                                 {stage.desc}
                               </span>
@@ -675,7 +647,6 @@ export default function DemoPage() {
                       </div>
                     </div>
 
-                    {/* SDK Deep Trace — scrollable if needed */}
                     {sdkLogs.length > 0 && (
                       <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-3 border-t border-white/[0.04]">
                         <div className="flex items-center gap-2 mb-2">
@@ -703,7 +674,6 @@ export default function DemoPage() {
               </motion.div>
             )}
 
-            {/* ═══════════════ SDK DOCS VIEW ═══════════════ */}
             {activeTab === "sdk-docs" && (
               <motion.div key="sdk-docs" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="flex-1 overflow-y-auto custom-scrollbar relative">
                 <div className="absolute inset-0 z-0 pointer-events-none">
@@ -786,7 +756,6 @@ export default function DemoPage() {
               </motion.div>
             )}
 
-            {/* ═══════════════ WHY SENDRA VIEW ═══════════════ */}
             {activeTab === "problem-solution" && (
               <motion.div key="problem-solution" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="flex-1 overflow-y-auto custom-scrollbar relative">
                 <div className="absolute inset-0 z-0 pointer-events-none">
@@ -866,7 +835,6 @@ export default function DemoPage() {
               </motion.div>
             )}
 
-            {/* ═══════════════ ARCHITECTURE VIEW ═══════════════ */}
             {activeTab === "architecture" && (
               <motion.div key="architecture" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="flex-1 overflow-y-auto custom-scrollbar relative">
                 <div className="absolute inset-0 z-0 pointer-events-none">
@@ -946,7 +914,6 @@ export default function DemoPage() {
               </motion.div>
             )}
 
-            {/* ═══════════════ CHANGELOG VIEW ═══════════════ */}
             {activeTab === "changelog" && (
               <motion.div key="changelog" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="flex-1 overflow-y-auto custom-scrollbar relative">
                 <div className="absolute inset-0 z-0 pointer-events-none">
@@ -996,12 +963,12 @@ export default function DemoPage() {
                       <div key={release.version} className="relative pl-8">
                         {ri < 2 && <div className="absolute left-[11px] top-8 bottom-0 w-px bg-white/[0.06]" />}
                         <div className={`absolute left-0 top-1.5 w-[23px] h-[23px] rounded-full flex items-center justify-center border ${release.tag === "Latest" ? "border-white/20" :
-                            release.tag === "Major" ? "border-white/12" :
-                              "border-white/[0.08]"
+                          release.tag === "Major" ? "border-white/12" :
+                            "border-white/[0.08]"
                           }`} style={{ background: "rgba(255,255,255,0.03)" }}>
                           <div className={`w-2 h-2 rounded-full ${release.tag === "Latest" ? "bg-white/60" :
-                              release.tag === "Major" ? "bg-white/30" :
-                                "bg-white/15"
+                            release.tag === "Major" ? "bg-white/30" :
+                              "bg-white/15"
                             }`} />
                         </div>
 
@@ -1009,8 +976,8 @@ export default function DemoPage() {
                           <div className="flex items-center gap-3 mb-3">
                             <span className="text-[16px] font-mono text-white/70 font-bold">{release.version}</span>
                             <span className={`px-2 py-0.5 rounded text-[8px] font-mono uppercase tracking-wider border ${release.tag === "Latest" ? "border-white/15 text-white/50" :
-                                release.tag === "Major" ? "border-white/10 text-white/30" :
-                                  "border-white/[0.06] text-white/20"
+                              release.tag === "Major" ? "border-white/10 text-white/30" :
+                                "border-white/[0.06] text-white/20"
                               }`} style={{ background: "rgba(255,255,255,0.03)" }}>{release.tag}</span>
                             <span className="text-[10px] font-mono text-white/15 ml-auto">{release.date}</span>
                           </div>

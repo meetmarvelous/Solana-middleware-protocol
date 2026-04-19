@@ -61,7 +61,6 @@ export function DemoTerminal() {
                         border: "1px solid rgba(255,255,255,0.065)",
                         boxShadow: "0 0 80px rgba(99,102,241,0.07), 0 40px 80px rgba(0,0,0,0.5)",
                     }}>
-                    {/* Titlebar */}
                     <div className="flex items-center gap-2 px-5 py-3.5 border-b border-white/[0.045]"
                         style={{ background: "rgba(255,255,255,0.018)" }}>
                         <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]/75" />
@@ -70,7 +69,6 @@ export function DemoTerminal() {
                         <span className="ml-3 font-mono text-[9.5px] text-white/16">sendra — transaction relay</span>
                     </div>
 
-                    {/* Stats */}
                     <div className="flex gap-8 px-5 py-2.5 border-b border-white/[0.04]"
                         style={{ background: "rgba(0,0,0,0.22)" }}>
                         {[
@@ -87,7 +85,6 @@ export function DemoTerminal() {
                         ))}
                     </div>
 
-                    {/* Logs */}
                     <div className="p-5 font-mono text-[11px] space-y-2 min-h-[500px]">
                         <AnimatePresence>
                             {visible.map(i => {
@@ -114,7 +111,6 @@ export function DemoTerminal() {
                         )}
                     </div>
 
-                    {/* Footer */}
                     <div className="px-5 py-3 border-t border-white/[0.04] flex items-center justify-between"
                         style={{ background: "rgba(0,0,0,0.12)" }}>
                         <span className="font-mono text-[9px] text-white/14">powered by sendra relay engine v2.1</span>

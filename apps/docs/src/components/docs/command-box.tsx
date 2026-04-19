@@ -28,8 +28,8 @@ export function CommandBox({ command }: CommandBoxProps) {
   };
 
   return (
-    <div className="my-6 w-full overflow-hidden rounded-xl border border-white/5 bg-transparent shadow-xl">
-      <div className="flex items-center justify-between border-b border-white/5 px-3 py-1.5">
+    <div className="my-6 w-full overflow-hidden rounded-xl border border-white/2 bg-transparent shadow-xl">
+      <div className="flex items-center justify-between border-b border-white/2 px-3 py-1.5">
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center w-6 h-6 rounded bg-white/5">
             <Terminal className="h-3.5 w-3.5 text-zinc-400" />
@@ -52,7 +52,7 @@ export function CommandBox({ command }: CommandBoxProps) {
               ))}
             </div>
           ) : (
-             <span className="text-[10px] font-mono text-zinc-600 tracking-widest uppercase">Terminal</span>
+            <span className="text-[10px] font-mono text-zinc-600 tracking-widest uppercase">Terminal</span>
           )}
         </div>
         <button
@@ -63,7 +63,7 @@ export function CommandBox({ command }: CommandBoxProps) {
         </button>
       </div>
       <div className="p-5">
-        <code className="text-[13px] font-mono whitespace-pre-wrap break-words text-zinc-300 block">
+        <code className="text-[13px] font-mono whitespace-pre-wrap break-words !bg-transparent !p-0 block text-zinc-300">
           <span className="text-zinc-500 mr-2">$</span>
           {currentCommand}
         </code>

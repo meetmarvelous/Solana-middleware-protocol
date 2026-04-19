@@ -112,7 +112,6 @@ export function FlowVisualizer({ steps }: FlowVisualizerProps) {
         border: "1px solid rgba(255,255,255,0.06)",
       }}
     >
-      {/* Header */}
       <div
         className="px-4 py-3 border-b flex items-center gap-2"
         style={{ borderColor: "rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.015)" }}
@@ -121,7 +120,6 @@ export function FlowVisualizer({ steps }: FlowVisualizerProps) {
         <span className="font-mono text-[9.5px] text-white/22 uppercase tracking-widest">Pipeline Execution</span>
       </div>
 
-      {/* Steps */}
       <div className="p-4 space-y-1.5">
         {steps.map((step, i) => {
           const isActive = step.status === "running";
@@ -139,44 +137,42 @@ export function FlowVisualizer({ steps }: FlowVisualizerProps) {
                 background: isActive
                   ? "rgba(99,102,241,0.07)"
                   : isDone && step.status === "success"
-                  ? "rgba(52,211,153,0.04)"
-                  : step.status === "error"
-                  ? "rgba(239,68,68,0.04)"
-                  : "transparent",
+                    ? "rgba(52,211,153,0.04)"
+                    : step.status === "error"
+                      ? "rgba(239,68,68,0.04)"
+                      : "transparent",
                 border: isActive
                   ? "1px solid rgba(99,102,241,0.2)"
                   : isDone && step.status === "success"
-                  ? "1px solid rgba(52,211,153,0.12)"
-                  : step.status === "error"
-                  ? "1px solid rgba(239,68,68,0.12)"
-                  : "1px solid transparent",
+                    ? "1px solid rgba(52,211,153,0.12)"
+                    : step.status === "error"
+                      ? "1px solid rgba(239,68,68,0.12)"
+                      : "1px solid transparent",
               }}
             >
-              {/* Step number / icon */}
               <div
                 className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 transition-colors duration-300"
                 style={{
                   background: isActive
                     ? "rgba(99,102,241,0.15)"
                     : step.status === "success"
-                    ? "rgba(52,211,153,0.1)"
-                    : step.status === "error"
-                    ? "rgba(239,68,68,0.1)"
-                    : "rgba(255,255,255,0.04)",
+                      ? "rgba(52,211,153,0.1)"
+                      : step.status === "error"
+                        ? "rgba(239,68,68,0.1)"
+                        : "rgba(255,255,255,0.04)",
                   color: isActive
                     ? "rgba(165,180,252,0.9)"
                     : step.status === "success"
-                    ? "rgba(52,211,153,0.9)"
-                    : step.status === "error"
-                    ? "rgba(239,68,68,0.9)"
-                    : "rgba(255,255,255,0.2)",
+                      ? "rgba(52,211,153,0.9)"
+                      : step.status === "error"
+                        ? "rgba(239,68,68,0.9)"
+                        : "rgba(255,255,255,0.2)",
                   border: "1px solid rgba(255,255,255,0.06)",
                 }}
               >
                 {iconEl}
               </div>
 
-              {/* Label + description */}
               <div className="flex-1 min-w-0">
                 <div
                   className="text-[11.5px] font-medium transition-colors duration-300"
@@ -184,8 +180,8 @@ export function FlowVisualizer({ steps }: FlowVisualizerProps) {
                     color: isActive
                       ? "rgba(255,255,255,0.9)"
                       : isDone
-                      ? "rgba(255,255,255,0.6)"
-                      : "rgba(255,255,255,0.25)",
+                        ? "rgba(255,255,255,0.6)"
+                        : "rgba(255,255,255,0.25)",
                   }}
                 >
                   {step.label}
@@ -195,10 +191,8 @@ export function FlowVisualizer({ steps }: FlowVisualizerProps) {
                 </div>
               </div>
 
-              {/* Status indicator */}
               <StatusDot status={step.status} />
 
-              {/* Active left bar */}
               {isActive && (
                 <motion.div
                   className="absolute left-0 top-2 bottom-2 w-px rounded-full"

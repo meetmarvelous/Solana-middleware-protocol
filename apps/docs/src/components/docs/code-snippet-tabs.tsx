@@ -8,7 +8,7 @@ import { atomOneDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 const CopyIcon = () => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
     <rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.1" />
-    <path d="M3 10H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v1" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+    <path d="M3 10H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h7a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v1" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
   </svg>
 );
 
@@ -175,7 +175,7 @@ export function CodeSnippetTabs() {
   }, [activeTab.code]);
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full my-12">
       <div
         className="absolute inset-0 rounded-2xl -z-10 pointer-events-none"
         style={{ boxShadow: "0 0 80px rgba(99,102,241,0.13), 0 32px 64px rgba(0,0,0,0.5)" }}
@@ -189,27 +189,22 @@ export function CodeSnippetTabs() {
         }}
       >
         <div
-          className="flex items-center justify-between px-4 py-3 border-b border-white/[0.05]"
-          style={{ background: "rgba(255,255,255,0.018)" }}
+          className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.05]"
+          style={{ background: "rgba(255,255,255,0.015)" }}
         >
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]/75" />
-            <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]/75" />
-            <div className="w-2.5 h-2.5 rounded-full bg-[#28c840]/75" />
+          <div className="flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/20">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
+            </svg>
+            <span className="font-mono text-[10px] text-white/40 tracking-tight">
+              sdk/integration.ts
+            </span>
           </div>
 
-          <span className="font-mono text-[9.5px] text-white/20 tracking-widest uppercase">
-            Sendra API
-          </span>
           <motion.button
             onClick={handleCopy}
             whileTap={{ scale: 0.93 }}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md font-mono text-[9.5px] transition-colors duration-200"
-            style={{
-              color: copied ? "#4ade80" : "rgba(255,255,255,0.28)",
-              background: copied ? "rgba(74,222,128,0.08)" : "rgba(255,255,255,0.04)",
-              border: `1px solid ${copied ? "rgba(74,222,128,0.2)" : "rgba(255,255,255,0.07)"}`,
-            }}
+            className="flex items-center gap-1.5 p-1.5 rounded-md transition-colors duration-200 hover:bg-white/[0.05] text-white/40 hover:text-white/70"
           >
             <AnimatePresence mode="wait" initial={false}>
               {copied ? (
@@ -219,10 +214,9 @@ export function CodeSnippetTabs() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.7 }}
                   transition={{ duration: 0.15 }}
-                  className="flex items-center gap-1.5"
+                  className="text-emerald-400"
                 >
                   <CheckIcon />
-                  Copied!
                 </motion.span>
               ) : (
                 <motion.span
@@ -231,10 +225,8 @@ export function CodeSnippetTabs() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.7 }}
                   transition={{ duration: 0.15 }}
-                  className="flex items-center gap-1.5"
                 >
                   <CopyIcon />
-                  Copy
                 </motion.span>
               )}
             </AnimatePresence>
@@ -289,7 +281,7 @@ export function CodeSnippetTabs() {
           <div className="relative overflow-hidden w-full md:w-[60%] border-r border-white/[0.04]">
             <div
               className="absolute top-0 bottom-0 left-0 w-10"
-              style={{ background: "rgba(0,0,0,0.18)", borderRight: "1px solid rgba(255,255,255,0.03)" }}
+              style={{ background: "rgba(0,0,0,0.12)", borderRight: "1px solid rgba(255,255,255,0.03)" }}
             />
 
             <AnimatePresence mode="wait" initial={false}>
@@ -305,7 +297,6 @@ export function CodeSnippetTabs() {
                   language={activeTab.lang}
                   style={customTheme}
                   showLineNumbers={true}
-                  className="[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                   lineNumberStyle={{
                     display: "inline-block",
                     color: "rgba(255,255,255,0.18)",
@@ -356,23 +347,6 @@ export function CodeSnippetTabs() {
               <br />
               # - Works with any Solana SDK
             </div>
-          </div>
-        </div>
-        <div
-          className="flex items-center gap-2 px-4 py-2.5 border-t border-white/[0.04]"
-          style={{ background: "rgba(0,0,0,0.25)" }}
-        >
-          <span className="font-mono text-[8.5px] text-white/16 tracking-widest uppercase">
-            POST /api/tx · api.sendra.dev
-          </span>
-          <div className="ml-auto flex items-center gap-1.5">
-            <span className="font-mono text-[8.5px] text-white/16">maxRetries: 3</span>
-            <span
-              className="px-1.5 py-0.5 rounded font-mono text-[7.5px] text-indigo-300/50 tracking-wide"
-              style={{ background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.12)" }}
-            >
-              JSON
-            </span>
           </div>
         </div>
       </div>

@@ -36,7 +36,6 @@ body {
   color: white;
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar {
   width: 3px;
 }
@@ -54,7 +53,6 @@ body {
   background: rgba(255, 255, 255, 0.15);
 }
 
-/* Smooth font rendering for large display text */
 h1,
 h2,
 h3 {

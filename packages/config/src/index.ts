@@ -31,11 +31,9 @@ export const demoLogs = [
     { type: "info", text: "[SEND] Broadcasting transaction...", delay: 4200 },
     { type: "info", text: "[STATUS] Pending confirmation...", delay: 4600 },
 
-    // 🔴 FAILURE SIMULATION
     { type: "warn", text: "[DELAY] Network congestion detected", delay: 5200 },
     { type: "error", text: "[FAILED] Transaction not confirmed in time", delay: 5800 },
 
-    // 🔁 RETRY FLOW
     { type: "info", text: "[RETRY] Attempt 2 initiated...", delay: 6400 },
     { type: "info", text: "[RPC] Switching RPC endpoint...", delay: 6800 },
     { type: "success", text: "[RPC_SELECTED] QuickNode (28ms latency)", delay: 7200 },
@@ -53,7 +51,6 @@ export const demoLogs = [
     { type: "info", text: "[SEND] Re-broadcasting transaction...", delay: 10400 },
     { type: "info", text: "[STATUS] Confirming...", delay: 10800 },
 
-    // ✅ SUCCESS
     { type: "success", text: "[CONFIRMED] Transaction landed successfully", delay: 11400 },
     { type: "success", text: "[FINAL] Execution completed in 2 attempts", delay: 12000 },
 ];

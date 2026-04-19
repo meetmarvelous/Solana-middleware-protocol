@@ -6,10 +6,8 @@ In Solana, a transaction is structurally tied to its blockhash. Since Sendra ref
 
 ```typescript
 interface Signer {
-  // Called by Sendra for every execution attempt
   signTransaction(tx: VersionedTransaction): Promise<VersionedTransaction>;
   
-  // The Public Key of the account paying for the transaction
   publicKey: PublicKey;
 }
 ```
@@ -23,7 +21,6 @@ The standard `@solana/wallet-adapter-react` satisfies the Signer interface out o
 
 ```typescript
 const { signTransaction, publicKey } = useWallet();
-// ...
 await SendWithReliability(params, { signTransaction, publicKey });
 ```
 

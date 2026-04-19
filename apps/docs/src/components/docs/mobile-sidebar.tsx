@@ -24,7 +24,6 @@ export function MobileSidebar({ items }: MobileSidebarProps) {
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
 
-  // Close on route change
   React.useEffect(() => {
     setOpen(false);
   }, [pathname]);

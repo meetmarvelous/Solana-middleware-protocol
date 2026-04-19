@@ -23,7 +23,6 @@ bun add @sendra/sdk @solana/web3.js
 In your application, you will need to provide at least one RPC URL. Sendra's Dynamic Router works best when given multiple providers to benchmark against.
 
 ```typescript
-// .env or config
 const RPC_URLS = [
   "https://mainnet.helius-rpc.com/?api-key=...",
   "https://solana-mainnet.g.alchemy.com/v2/..."
@@ -44,7 +43,7 @@ const instructions = [
   SystemProgram.transfer({
     fromPubkey: sender,
     toPubkey: receiver,
-    lamports: 1000000, // 0.001 SOL
+    lamports: 1000000,
   })
 ];
 ```
@@ -62,7 +61,7 @@ const result = await SendWithReliability(
     instructions,
     payer: sender
   },
-  wallet, // Standard Signer interface
+  wallet,
   { 
     maxRetries: 5,
     logger: (event) => console.log(`[Sendra] ${event.message}`)

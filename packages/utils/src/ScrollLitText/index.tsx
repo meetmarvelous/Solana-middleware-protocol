@@ -34,11 +34,9 @@ export function ScrollLitText() {
                 })}
             </div>
 
-            {/* ── Problem vs Solution Divider and Grid ── */}
             <div className="w-full h-px bg-white/[0.04] mb-12" />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 px-0 lg:px-4">
-                {/* Left: Problem */}
                 <div>
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-6 border border-white/[0.05]" style={{ background: "rgba(255,255,255,0.02)" }}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/40">
@@ -50,9 +48,7 @@ export function ScrollLitText() {
                     </p>
                 </div>
 
-                {/* Right: Solution */}
                 <div className="relative">
-                    {/* Subtle vertical divider on desktop */}
                     <div className="hidden md:block absolute -left-12 top-0 bottom-0 w-px bg-white/[0.04]" />
 
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-6 border border-white/[0.05]" style={{ background: "rgba(255,255,255,0.02)" }}>

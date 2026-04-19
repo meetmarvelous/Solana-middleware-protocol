@@ -20,7 +20,6 @@ export function ArchitectureDiagram() {
   return (
     <div ref={ref} className="w-full">
 
-      {/* ── Mobile: vertical list ── */}
       <div className="flex flex-col gap-2.5 md:hidden">
         {mainNodes.map((node, i) => (
           <motion.div
@@ -37,7 +36,7 @@ export function ArchitectureDiagram() {
               <div className="text-[11px] font-medium text-white/78">{node.label}</div>
               <div className="text-[9px] font-mono text-white/28">{node.sub}</div>
             </div>
-            {/* Retry badge inline on mobile */}
+
             {node.hasRetry && (
               <div
                 className="px-2.5 py-1.5 rounded-lg text-center"
@@ -55,24 +54,11 @@ export function ArchitectureDiagram() {
           </motion.div>
         ))}
       </div>
-
-      {/* ── Desktop: horizontal flow with per-column wrappers ── */}
-      {/*
-        Structure:
-          [col: node + optional retry below]  [arrow]  [col: node + ...]  ...
-
-        Key: items-start on outer flex so each col is top-aligned.
-        Arrow divs have an explicit height matching the node box, so they
-        stay vertically centered with the top row only, regardless of
-        whether the adjacent column has a retry section below it.
-      */}
       <div className="hidden md:flex items-start">
         {mainNodes.map((node, i) => (
           <div key={node.id} className="flex items-start">
 
-            {/* ── Node column ── */}
             <div className="flex flex-col items-center">
-              {/* Node box */}
               <motion.div
                 initial={{ opacity: 0, y: 14 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -88,7 +74,6 @@ export function ArchitectureDiagram() {
                 <div className="text-[8.5px] font-mono text-white/28 whitespace-nowrap mt-0.5">{node.sub}</div>
               </motion.div>
 
-              {/* ── Retry Engine — only under RPC Node ── */}
               {node.hasRetry && (
                 <motion.div
                   className="flex flex-col items-center"
@@ -96,7 +81,6 @@ export function ArchitectureDiagram() {
                   animate={inView ? { opacity: 1, y: 0 } : {}}
                   transition={{ delay: 0.65, duration: 0.35 }}
                 >
-                  {/* Vertical line down from RPC Node */}
                   <div
                     className="w-px"
                     style={{
@@ -105,7 +89,6 @@ export function ArchitectureDiagram() {
                     }}
                   />
 
-                  {/* Retry Engine box */}
                   <div
                     className="px-3.5 py-2.5 rounded-xl text-center"
                     style={{
@@ -125,7 +108,6 @@ export function ArchitectureDiagram() {
                     </div>
                   </div>
 
-                  {/* Label */}
                   <div
                     className="text-[8px] font-mono mt-1 text-center"
                     style={{ color: "rgba(251,191,36,0.4)" }}
@@ -136,17 +118,9 @@ export function ArchitectureDiagram() {
               )}
             </div>
 
-            {/* ── Arrow between nodes (not after the last one) ── */}
             {i < mainNodes.length - 1 && (
               <motion.div
                 className="flex items-center flex-shrink-0"
-                /*
-                  Height here must match the node box height so the arrow
-                  stays vertically centered with the node row, not the
-                  full column height (which varies when retry is present).
-                  The node box is ~46px tall (2.5 + text + 0.5 padding).
-                  We use a fixed height of 46px.
-                */
                 style={{ width: "28px", height: "46px", transformOrigin: "left" }}
                 initial={{ scaleX: 0, opacity: 0 }}
                 animate={inView ? { scaleX: 1, opacity: 1 } : {}}

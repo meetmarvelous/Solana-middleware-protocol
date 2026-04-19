@@ -178,7 +178,7 @@ const result = await sendWithReliability(
   {
     type: "built",
     serializedTx: false,
-    transaction: versionedTransaction, // prebuilt tx
+    transaction: versionedTransaction,
   },
   signer,
   { maxRetries: 3 }

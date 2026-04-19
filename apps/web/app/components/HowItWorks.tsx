@@ -13,7 +13,6 @@ export default function () {
                         <h2 className="text-3xl md:text-[40px] font-light text-white leading-tight">How Sendra works</h2>
                     </div>
 
-                    {/* ── Main bordered container ── */}
                     <motion.div
                         initial={{ opacity: 0, y: 24 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -25,7 +24,6 @@ export default function () {
                             background: "linear-gradient(160deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.008) 100%)",
                         }}
                     >
-                        {/* ── Video ── */}
                         <div className="relative w-full" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
                             <video
                                 className="w-full block"
@@ -39,7 +37,6 @@ export default function () {
                             </video>
                         </div>
 
-                        {/* ── Steps rows (2 rows × 3 columns) ── */}
                         {[pipeline.slice(0, 3), pipeline.slice(3, 6)].map((row, rowIdx) => (
                             <div key={rowIdx} className="flex flex-col sm:flex-row"
                                 style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
@@ -58,7 +55,6 @@ export default function () {
                                                 borderRight: isLastCol ? "none" : "1px solid rgba(255,255,255,0.06)",
                                             }}
                                         >
-                                            {/* Number + Title inline */}
                                             <div className="flex items-baseline gap-3 mb-1.5">
                                                 <span className="text-[14px] font-semibold" style={{ color: "#E8734A" }}>
                                                     {String(globalIdx + 1).padStart(2, "0")}
@@ -67,7 +63,6 @@ export default function () {
                                                     {step.label}
                                                 </span>
                                             </div>
-                                            {/* Description */}
                                             <p className="text-[12.5px] leading-relaxed text-white/40 pl-[29px]">
                                                 {step.desc}
                                             </p>

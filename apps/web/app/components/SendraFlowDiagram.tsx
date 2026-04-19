@@ -18,20 +18,19 @@ export interface SendraFlowDiagramProps {
 
 export function FlowStepNode({ id, label, desc, isActive, isDone, isFailed }: { id: string; label: string; desc: string; isActive: boolean; isDone: boolean; isFailed: boolean }) {
   const isError = isFailed && id === "CONFIRM_TX";
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`relative w-full max-w-[280px] p-3.5 rounded-xl border flex flex-col gap-1 transition-all duration-300 ${
-        isActive
-          ? "bg-indigo-500/10 border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.15)]"
-          : isDone
+      className={`relative w-full max-w-[280px] p-3.5 rounded-xl border flex flex-col gap-1 transition-all duration-300 ${isActive
+        ? "bg-indigo-500/10 border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.15)]"
+        : isDone
           ? "bg-white/[0.03] border-white/10"
           : isError
-          ? "bg-red-500/10 border-red-500/40"
-          : "bg-black/40 border-white/[0.04] opacity-40"
-      }`}
+            ? "bg-red-500/10 border-red-500/40"
+            : "bg-black/40 border-white/[0.04] opacity-40"
+        }`}
     >
       <div className="flex items-center justify-between">
         <span className={`text-[10px] font-mono uppercase tracking-widest ${isActive ? "text-indigo-400" : isDone ? "text-emerald-400/80" : isError ? "text-red-400" : "text-white/30"}`}>
@@ -74,22 +73,20 @@ export function VerticalConnector({ active }: { active: boolean }) {
 
 export default function SendraFlowDiagram({ currentStep }: SendraFlowDiagramProps) {
   const isRetry = currentStep === "RETRY";
-  
-  // Clean up current step if it's retry or idle
+
   const activeNormalized = isRetry ? "CONFIRM_TX" : currentStep;
   const activeIndex = STEPS.findIndex((s) => s.id === activeNormalized);
-  
+
   const isFailed = currentStep === "FAIL_TX" || currentStep === "TX_FAILED";
 
   return (
     <div className="relative w-full flex flex-col items-center py-6 overflow-hidden">
-      
-      {/* The main flow column */}
+
       <div className="flex flex-col relative z-10 w-full items-center">
         {STEPS.map((step, idx) => {
           const isActive = idx === activeIndex || (isRetry && step.id === "CONFIRM_TX");
           const isDone = activeIndex === -1 ? false : idx < activeIndex;
-          
+
           return (
             <div key={step.id} className="flex flex-col items-center w-[280px]">
               <FlowStepNode
@@ -108,9 +105,8 @@ export default function SendraFlowDiagram({ currentStep }: SendraFlowDiagramProp
         })}
       </div>
 
-      {/* Absolute SVG for Retry Loop */}
       <div className={`absolute right-4 md:right-8 top-[38%] bottom-[10%] w-[30px] md:w-[50px] pointer-events-none transition-opacity duration-300 ${isRetry ? "opacity-100" : "opacity-0"}`}>
-         <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
+        <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
           <motion.path
             d="M 0,100 C 100,100 100,0 0,0"
             fill="none"

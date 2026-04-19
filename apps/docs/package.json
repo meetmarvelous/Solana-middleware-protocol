@@ -25,9 +25,12 @@
     "next-themes": "^0.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "tailwind-merge": "^2.2.2"
+    "tailwind-merge": "^2.2.2",
+    "framer-motion": "^11.0.8",
+    "react-syntax-highlighter": "^15.5.0"
   },
   "devDependencies": {
+    "@types/react-syntax-highlighter": "^15.5.11",
     "@tailwindcss/typography": "^0.5.12",
     "@types/node": "^20.11.30",
     "@types/react": "^18.2.69",

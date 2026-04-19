@@ -25,7 +25,6 @@ export function ComponentPreview({
 
   return (
     <div className={cn("group my-6 overflow-hidden rounded-lg border", className)}>
-      {/* Tab bar */}
       <div className="flex items-center border-b bg-muted/50 px-4">
         <button
           onClick={() => setActiveTab("preview")}
@@ -53,7 +52,6 @@ export function ComponentPreview({
         )}
       </div>
 
-      {/* Preview panel */}
       {activeTab === "preview" && (
         <div
           className={cn(
@@ -67,7 +65,6 @@ export function ComponentPreview({
         </div>
       )}
 
-      {/* Code panel */}
       {activeTab === "code" && code && (
         <div className="relative">
           <pre className="overflow-x-auto rounded-none border-0 bg-zinc-950 p-4 text-sm">

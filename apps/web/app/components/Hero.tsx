@@ -20,7 +20,6 @@ export default function Hero({ heroRef, heroY, heroOpacity }: { heroRef: any, he
                 />
 
                 <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10 max-w-[1313px] mx-auto flex flex-col items-center text-center">
-                    {/* Badge */}
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -38,7 +37,6 @@ export default function Hero({ heroRef, heroY, heroOpacity }: { heroRef: any, he
                         />
                     </motion.div>
 
-                    {/* H1 */}
                     <motion.h1
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -48,7 +46,6 @@ export default function Hero({ heroRef, heroY, heroOpacity }: { heroRef: any, he
                         Transactions that don't fail
                     </motion.h1>
 
-                    {/* Subtext */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -60,7 +57,6 @@ export default function Hero({ heroRef, heroY, heroOpacity }: { heroRef: any, he
                         optimizing fees, routing RPCs, and retrying until your transaction succeeds.
                     </motion.div>
 
-                    {/* CTAs */}
                     <motion.div
                         initial={{ opacity: 0, y: 18 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -73,7 +69,6 @@ export default function Hero({ heroRef, heroY, heroOpacity }: { heroRef: any, he
                         <GhostButton size="md">BOOK A DEMO</GhostButton>
                     </motion.div>
 
-                    {/* New Code Snippet in Hero */}
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}

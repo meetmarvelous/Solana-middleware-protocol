@@ -8,6 +8,7 @@ export interface NavItem {
 
 export interface NavItemWithChildren extends NavItem {
   items?: NavItemWithChildren[];
+  dot?: boolean
 }
 
 export interface SidebarNavGroup {

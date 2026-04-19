@@ -33,7 +33,6 @@ Security is a first-class citizen in Sendra. The SDK is natively non-custodial, 
 
 ```typescript
 interface Signer {
-  // Called by Sendra's engine whenever a reconstruction triggers a new signature requirement
   signTransaction(tx: VersionedTransaction): Promise<VersionedTransaction>;
 }
 ```

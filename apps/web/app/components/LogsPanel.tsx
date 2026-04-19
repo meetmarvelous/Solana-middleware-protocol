@@ -47,7 +47,6 @@ export function LogsPanel({ logs, onClear }: LogsPanelProps) {
         minHeight: "280px",
       }}
     >
-      {/* Header */}
       <div
         className="px-4 py-3 border-b flex items-center gap-2 flex-shrink-0"
         style={{ borderColor: "rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.015)" }}
@@ -80,7 +79,6 @@ export function LogsPanel({ logs, onClear }: LogsPanelProps) {
         </div>
       </div>
 
-      {/* Log entries */}
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto p-4 space-y-1.5 font-mono text-[11px]"

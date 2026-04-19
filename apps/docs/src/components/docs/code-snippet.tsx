@@ -1,92 +1,145 @@
 "use client";
 
-import * as React from "react";
-import { Check, Copy } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { atomOneDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
+
+const CopyIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.1" />
+    <path d="M3 10H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v1" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <path d="M2.5 7.5l3 3 6-6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 
 interface CodeSnippetProps {
   code: string;
   language: string;
-  filename?: string;
-  showLineNumbers?: boolean;
 }
 
-export function CodeSnippet({ code, language, filename, showLineNumbers = true }: CodeSnippetProps) {
-  const [copied, setCopied] = React.useState(false);
+const customTheme = {
+  ...atomOneDark,
+  hljs: {
+    ...atomOneDark.hljs,
+    background: "transparent",
+    color: "#c9d1d9",
+    fontSize: "12.5px",
+    lineHeight: "1.75",
+    fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace",
+  },
+};
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+export function CodeSnippet({ code, language }: CodeSnippetProps) {
+  const [copied, setCopied] = useState(false);
 
-  const lines = code.trim().split("\n");
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [code]);
 
   return (
-    <div className="my-8 w-full overflow-hidden rounded-2xl border border-white/5 bg-transparent shadow-2xl">
-      {/* WINDOW HEADER */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.05]">
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]/80" />
-            <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]/80" />
-            <div className="w-2.5 h-2.5 rounded-full bg-[#28c840]/80" />
-          </div>
-          {filename && (
-            <span className="ml-4 font-mono text-[10px] text-zinc-500 tracking-widest uppercase">
-              {filename}
-            </span>
-          )}
-        </div>
-        <button
-          onClick={handleCopy}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md font-mono text-[9px] transition-all duration-200 text-zinc-500 hover:text-zinc-300 hover:bg-white/5 border border-white/5"
+    <div className="relative w-full my-8">
+      <div
+        className="absolute inset-0 rounded-2xl -z-10 pointer-events-none"
+        style={{ boxShadow: "0 0 80px rgba(99,102,241,0.08), 0 32px 64px rgba(0,0,0,0.3)" }}
+      />
+
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{
+          backgroundColor: "#000000",
+          border: "1px solid rgba(255,255,255,0.07)",
+        }}
+      >
+        <div
+          className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.05]"
+          style={{ background: "rgba(255,255,255,0.015)" }}
         >
-          {copied ? (
-            <span className="flex items-center gap-1.5 text-green-400">
-              <Check className="h-3.5 w-3.5" />
-              COPIED
+          <div className="flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/20">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
+            </svg>
+            <span className="font-mono text-[10px] text-white/40 tracking-tight">
+              {language === 'typescript' ? 'example.ts' : language === 'rust' ? 'main.rs' : language === 'python' ? 'app.py' : language === 'go' ? 'main.go' : 'code.txt'}
             </span>
-          ) : (
-            <span className="flex items-center gap-1.5">
-              <Copy className="h-3.5 w-3.5" />
-              COPY
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* CONTENT AREA */}
-      <div className="flex relative items-stretch">
-        {/* LINE NUMBERS */}
-        {showLineNumbers && (
-          <div className="flex flex-col text-right px-4 py-4 border-r border-white/5 select-none min-w-[50px] shrink-0">
-            {lines.map((_, i) => (
-              <span key={i} className="font-mono text-[12px] leading-6 text-zinc-600 block h-6">
-                {i + 1}
-              </span>
-            ))}
           </div>
-        )}
 
-        {/* CODE — Pure Transparent, Proper Word Wrapping */}
-        <div className="grow py-4 pl-4 pr-6 overflow-hidden">
-          <div className="m-0 bg-transparent p-0 border-0">
-            <code className="font-mono text-[13px] leading-6 text-zinc-300 whitespace-pre-wrap break-words block">
-              {code}
-            </code>
-          </div>
+          <motion.button
+            onClick={handleCopy}
+            whileTap={{ scale: 0.93 }}
+            className="flex items-center gap-1.5 p-1.5 rounded-md transition-colors duration-200 hover:bg-white/[0.05] text-white/40 hover:text-white/70"
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              {copied ? (
+                <motion.span
+                  key="check"
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.7 }}
+                  transition={{ duration: 0.15 }}
+                  className="text-emerald-400"
+                >
+                  <CheckIcon />
+                </motion.span>
+              ) : (
+                <motion.span
+                  key="copy"
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.7 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <CopyIcon />
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.button>
         </div>
-      </div>
 
-      {/* FOOTER */}
-      <div className="px-4 py-2 border-t border-white/[0.03] flex items-center justify-between">
-        <span className="font-mono text-[8px] text-zinc-700 tracking-[0.2em] uppercase">
-          Transmission Protocol Active
-        </span>
-        <div className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-blue-500/50" />
-          <span className="font-mono text-[8.5px] text-zinc-700 uppercase tracking-widest">{language}</span>
+        <div className="relative overflow-hidden w-full">
+          <div
+            className="absolute top-0 bottom-0 left-0 w-10"
+            style={{ background: "rgba(0,0,0,0.12)", borderRight: "1px solid rgba(255,255,255,0.03)" }}
+          />
+
+          <div className="min-h-[100px] overflow-hidden">
+            <SyntaxHighlighter
+              language={language}
+              style={customTheme}
+              showLineNumbers={true}
+              lineNumberStyle={{
+                display: "inline-block",
+                color: "rgba(255,255,255,0.12)",
+                fontSize: "10px",
+                minWidth: "40px",
+                paddingRight: "12px",
+                paddingLeft: "4px",
+                textAlign: "right",
+                userSelect: "none",
+              }}
+              customStyle={{
+                margin: 0,
+                padding: "20px 20px 24px 0",
+                background: "transparent",
+                overflow: "auto",
+              }}
+              codeTagProps={{
+                style: {
+                  fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace",
+                },
+              }}
+            >
+              {code}
+            </SyntaxHighlighter>
+          </div>
         </div>
       </div>
     </div>

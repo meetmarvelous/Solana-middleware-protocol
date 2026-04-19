@@ -22,31 +22,22 @@ export default function SendraPage() {
     <main className="relative min-h-screen text-white overflow-x-hidden"
       style={{ background: "linear-gradient(180deg, #06060a 0%, #080810 25%, #07070c 55%, #060608 100%)" }}>
 
-      {/* ── Header ── */}
       <Header />
 
-      {/* ── Hero ── */}
       <Hero heroRef={heroRef} heroY={heroY} heroOpacity={heroOpacity} />
 
-      {/* ── Scroll-lit ── */}
       <Problem />
 
-      {/* ── How it works ── */}
       <HowItWorks />
 
-      {/* ── Blog / Insights ── */}
       <Blog />
 
-      {/* ── Demo Terminal ── */}
       <DemoTerminal />
 
-      {/* ── FAQ ── */}
       <FAQSection />
 
-      {/* ── CTA Banner ── */}
       <CTABanner />
 
-      {/* ── Footer ── */}
       <Footer />
 
     </main>

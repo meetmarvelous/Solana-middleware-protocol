@@ -8,16 +8,13 @@ In high-volatility environments (e.g., meme-token launches or protocol migration
 Instead of just retrying, you wrap the pre-built Jupiter transaction. If the first broadcast is dropped by the leader, Sendra instantly refreshes the hash and attempts again *within milliseconds*. 
 
 ```typescript
-// Fetching a pre-built transaction from Jupiter
 const { swapTransaction } = await (await fetch('https://quote-api.jup.ag/v6/swap', { ... })).json();
 
-// Sendra extracts the logic and manages the lifecycle
 const result = await SendWithReliability(
   { type: "built", transaction: VersionedTransaction.deserialize(Buffer.from(swapTransaction, 'base64')) },
   wallet,
   { 
     maxRetries: 5,
-    // Using the logger to monitor slippage vs. network failure
     logger: (e) => e.step === 'SIMULATION_ERROR' && console.error("Slippage exceeded!")
   }
 );
@@ -40,7 +37,6 @@ const signer = {
   }
 };
 
-// Sendra handles the unique congestion and blockhash for every individual transfer in the batch
 const executionResults = await Promise.allSettled(
   payouts.map(p => SendWithReliability({ type: "params", instructions: [p], payer: authority.publicKey }, signer))
 );

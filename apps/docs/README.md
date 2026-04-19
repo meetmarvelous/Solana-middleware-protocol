@@ -139,7 +139,6 @@ The content loader lives in `src/lib/docs.ts`. It exports two functions:
 Replace the stub body with your real content source:
 
 ```ts
-// Option A: MDX files on disk
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
@@ -156,7 +155,6 @@ export function getDocBySlug(slug: string) {
 ```
 
 ```ts
-// Option B: Contentlayer
 import { allDocs } from "contentlayer/generated";
 
 export function getDocBySlug(slug: string) {
@@ -165,7 +163,6 @@ export function getDocBySlug(slug: string) {
 ```
 
 ```ts
-// Option C: Remote CMS (Contentful, Sanity, etc.)
 export async function getDocBySlug(slug: string) {
   const data = await fetchFromCMS(slug);
   return data;

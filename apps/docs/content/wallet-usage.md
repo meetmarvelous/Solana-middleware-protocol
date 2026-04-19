@@ -10,7 +10,6 @@ import { useWallet } from "@solana/wallet-adapter-react";
 const { publicKey, signTransaction } = useWallet();
 
 const handleTransaction = async () => {
-    // Standard adaptation
     const signer = { publicKey, signTransaction };
     
     const result = await SendWithReliability(params, signer);

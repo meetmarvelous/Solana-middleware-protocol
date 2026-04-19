@@ -86,7 +86,6 @@ function MetricCard({ metric, index, compact }: MetricCardProps) {
         border: "1px solid rgba(255,255,255,0.07)",
       }}
     >
-      {/* Top glow edge */}
       <div
         className="absolute top-0 left-6 right-6 h-px"
         style={{ background: `linear-gradient(90deg, transparent, ${metric.accent}22, transparent)` }}
@@ -99,7 +98,6 @@ function MetricCard({ metric, index, compact }: MetricCardProps) {
         transition={{ duration: 0.25 }}
       />
 
-      {/* Icon */}
       <div
         className={`${compact ? "w-7 h-7" : "w-8 h-8"} rounded-lg flex items-center justify-center mb-3 transition-colors duration-300`}
         style={{
@@ -111,7 +109,6 @@ function MetricCard({ metric, index, compact }: MetricCardProps) {
         {metric.icon}
       </div>
 
-      {/* Value */}
       <div
         className={`${compact ? "text-xl" : "text-2xl"} font-light tabular-nums mb-0.5`}
         style={{ color: "rgba(255,255,255,0.88)" }}
@@ -119,15 +116,12 @@ function MetricCard({ metric, index, compact }: MetricCardProps) {
         {metric.value}
       </div>
 
-      {/* Label */}
       <div className="text-[11px] font-medium text-white/55">{metric.label}</div>
 
-      {/* Sub */}
       {!compact && (
         <div className="text-[9.5px] font-mono text-white/20 mt-0.5 uppercase tracking-widest">{metric.sub}</div>
       )}
 
-      {/* Bottom glow on hover */}
       <motion.div
         className="absolute inset-0 rounded-xl pointer-events-none"
         style={{ boxShadow: `inset 0 0 24px ${metric.accent}08` }}
