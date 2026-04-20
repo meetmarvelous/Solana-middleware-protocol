@@ -2,10 +2,6 @@
 
 import * as React from "react";
 
-/**
- * Observes headings in the given selector and returns the ID of the
- * currently visible heading for TOC highlighting.
- */
 export function useScrollSpy(
   selector: string,
   options?: IntersectionObserverInit
