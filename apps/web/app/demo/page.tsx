@@ -97,6 +97,53 @@ const PIPELINE_STAGES = [
   { id: "RETRY", label: "Retry", desc: "Auto-retry with new route" },
 ];
 
+const EVENT_TO_PIPELINE: Record<string, string> = {
+  RPC_SELECTED: "SELECT_RPC",
+  TX_BUILT: "BUILD_TX",
+  TX_LOADED: "BUILD_TX",
+  FEE_OPTIMIZED: "OPTIMIZE_FEE",
+  SIMULATION_SUCCESS: "SIMULATE",
+  SIMULATION_FAILED: "SIMULATE",
+  TX_SIGNED: "SIGN_TX",
+  TX_SENT: "SEND_TX",
+  TX_CONFIRMED: "CONFIRM_TX",
+  TX_CONFIRMED_AFTER_RETRY: "CONFIRM_TX",
+  RETRY_ATTEMPT: "RETRY",
+  FEE_REOPTIMIZED: "OPTIMIZE_FEE",
+  RETRY_SIMULATION_SUCCESS: "SIMULATE",
+  RETRY_SIMULATION_FAILED: "SIMULATE",
+};
+
+type TxStatus = "idle" | "initializing" | "broadcasting" | "confirmed" | "retrying" | "failed";
+
+function eventToTerminalLog(event: any): { type: "info" | "success" | "error" | "warn"; message: string } {
+  const step = event.step;
+  switch (step) {
+    case "RPC_SELECTED": return { type: "info", message: `RPC selected → ${event.rpc ? event.rpc.replace('https://', '').slice(0, 40) : 'endpoint'}${event.attempt ? ` (attempt ${event.attempt})` : ''}` };
+    case "TX_BUILT": return { type: "info", message: `Transaction constructed${event.rpc ? ` via ${event.rpc.replace('https://', '').slice(0, 30)}` : ''}` };
+    case "TX_LOADED": return { type: "info", message: "Pre-built transaction loaded" };
+    case "FEE_OPTIMIZED": return { type: "info", message: `Fee optimized → ${event.fee ? event.fee + ' micro-lamports' : 'dynamic'}` };
+    case "FEE_REOPTIMIZED": return { type: "warn", message: `Fee re-optimized → ${event.fee || 'adjusted'} micro-lamports (attempt ${event.attempt || '?'})` };
+    case "SIMULATION_SUCCESS": return { type: "success", message: "✓ Simulation passed — transaction is valid" };
+    case "SIMULATION_FAILED": return { type: "error", message: "✗ Simulation failed — transaction would revert" };
+    case "RETRY_SIMULATION_SUCCESS": return { type: "success", message: `✓ Retry simulation passed (attempt ${event.attempt || '?'})` };
+    case "RETRY_SIMULATION_FAILED": return { type: "error", message: `✗ Retry simulation failed (attempt ${event.attempt || '?'})` };
+    case "TX_SIGNED": return { type: "info", message: `Transaction signed by wallet${event.attempt ? ` (attempt ${event.attempt})` : ''}` };
+    case "TX_SENT": return { type: "info", message: `Transaction broadcast to network${event.attempt ? ` (attempt ${event.attempt})` : ''}` };
+    case "TX_CONFIRMED": return { type: "success", message: "═══ ✓ Transaction Confirmed On-Chain ═══" };
+    case "TX_CONFIRMED_AFTER_RETRY": return { type: "success", message: `═══ ✓ Confirmed after ${event.attempt || '?'} retries ═══` };
+    case "TX_NOT_CONFIRMED": return { type: "warn", message: "Transaction not confirmed — will retry" };
+    case "ATTEMPT_FAILED": return { type: "warn", message: "Initial attempt failed — entering retry loop" };
+    case "RETRY_ATTEMPT": return { type: "warn", message: `↻ Retry attempt ${event.attempt || '?'} starting...` };
+    case "BLOCKHASH_EXPIRED": return { type: "warn", message: "Blockhash expired — rebuilding transaction" };
+    case "SEND_FAILED": return { type: "error", message: `Send failed: ${event.message || 'unknown error'}` };
+    case "RETRY_FAILED_REASON": return { type: "warn", message: `Failure classified: ${event.message || 'unknown'}` };
+    case "ACTION": return { type: "info", message: `Action: ${event.message || ''}` };
+    case "MAX_RETRIES_EXCEEDED": return { type: "error", message: "✗ Maximum retries exceeded — transaction failed" };
+    default: return { type: "info", message: `[${step}] ${event.message || ''}` };
+  }
+}
+
 type SidebarTab = "dashboard" | "sdk-docs" | "problem-solution" | "architecture" | "changelog";
 
 interface TxHistoryEntry {
@@ -123,11 +170,49 @@ export default function DemoPage() {
   const [isSendraTx, setIsSendraTx] = useState(false);
   const [txHistory, setTxHistory] = useState<TxHistoryEntry[]>([]);
   const [activeTab, setActiveTab] = useState<SidebarTab>("dashboard");
+  const [completedStages, setCompletedStages] = useState<Set<string>>(new Set());
+  const [activeStage, setActiveStage] = useState<string | null>(null);
+  const [txStatus, setTxStatus] = useState<TxStatus>("idle");
   const terminalRef = useRef<HTMLDivElement>(null);
+  const logQueueRef = useRef<any[]>([]);
+  const processingRef = useRef(false);
+
+  const processLogQueue = useCallback(async () => {
+    if (processingRef.current) return;
+    processingRef.current = true;
+    while (logQueueRef.current.length > 0) {
+      const item = logQueueRef.current.shift()!;
+      // Small delay between visual updates for realistic feel
+      await new Promise(r => setTimeout(r, 100 + Math.random() * 150));
+      // Update terminal log
+      const termLog = eventToTerminalLog(item);
+      const time = new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      setLogs(prev => [...prev, { ...termLog, time, id: Math.random() }]);
+      // Update SDK execution trace
+      setSdkLogs(prev => [...prev, { ...item, _ts: Date.now() }]);
+      // Update pipeline
+      const pipelineId = EVENT_TO_PIPELINE[item.step];
+      if (pipelineId) {
+        setActiveStage(pipelineId);
+        // Mark previous stage as completed when a new one activates
+        setCompletedStages(prev => {
+          const next = new Set(prev);
+          if (pipelineId) next.add(pipelineId);
+          return next;
+        });
+      }
+      // Update transaction status
+      if (item.step === "TX_SENT") setTxStatus("broadcasting");
+      if (item.step === "RETRY_ATTEMPT") setTxStatus("retrying");
+      if (item.step === "TX_CONFIRMED" || item.step === "TX_CONFIRMED_AFTER_RETRY") setTxStatus("confirmed");
+      if (item.step === "SIMULATION_FAILED" || item.step === "MAX_RETRIES_EXCEEDED" || item.step === "SEND_FAILED") setTxStatus("failed");
+    }
+    processingRef.current = false;
+  }, []);
 
   useEffect(() => {
     if (terminalRef.current) {
-      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+      terminalRef.current.scrollTo({ top: terminalRef.current.scrollHeight, behavior: 'smooth' });
     }
   }, [logs]);
 
@@ -154,47 +239,74 @@ export default function DemoPage() {
       return;
     }
 
+    // Reset all state
     setLoading(true);
     setResult(null);
     setLogs([]);
     setSdkLogs([]);
     setIsSendraTx(true);
     setActiveTab("dashboard");
+    setCompletedStages(new Set());
+    setActiveStage(null);
+    setTxStatus("initializing");
+    logQueueRef.current = [];
+    processingRef.current = false;
 
-    pushLog("info", "─── Sendra Reliability Layer Activated ───");
-    pushLog("info", "Step 1/6: Initializing Sendra SDK...");
-    pushLog("info", "  → This will route your transaction through Sendra's intelligent pipeline");
-    pushLog("info", "  → Pipeline: RPC Selection → Build TX → Fee Optimization → Simulate → Sign → Send & Confirm");
-    pushLog("info", `  → Sender: ${publicKey.toBase58().slice(0, 8)}...${publicKey.toBase58().slice(-4)}`);
-    pushLog("info", `  → Receiver: ${receiver.slice(0, 8)}...${receiver.slice(-4)}`);
-    pushLog("info", `  → Amount: ${amount} lamports (${(Number(amount) / 1e9).toFixed(6)} SOL)`);
+    // Initial log
+    const time = new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    setLogs([{ type: "info", message: "─── Sendra Reliability Layer Activated ───", time, id: Math.random() }]);
+    await new Promise(r => setTimeout(r, 200));
+    pushLog("info", `Sender: ${publicKey.toBase58().slice(0, 8)}...${publicKey.toBase58().slice(-4)} → Receiver: ${receiver.slice(0, 8)}...${receiver.slice(-4)}`);
+    pushLog("info", `Amount: ${amount} lamports (${(Number(amount) / 1e9).toFixed(6)} SOL)`);
+    await new Promise(r => setTimeout(r, 150));
+    pushLog("info", "Entering Sendra pipeline...");
 
     try {
       const signer = { publicKey, signTransaction };
-      pushLog("info", "Step 2/6: Sending to Sendra SDK — routing begins now...");
+
+      // Real-time logger callback — this is the key
+      const realtimeLogger = (event: any) => {
+        logQueueRef.current.push(event);
+        processLogQueue();
+      };
+
       const res = await SendWithReliability(
         { type: "params", to: new PublicKey(receiver), amount: Number(amount) },
         signer,
-        { maxRetries: 3 }
+        { maxRetries: 3, logger: realtimeLogger }
       ) as any;
+
+      // Wait for remaining queued logs to finish rendering
+      await new Promise(r => setTimeout(r, 500));
+      while (logQueueRef.current.length > 0 || processingRef.current) {
+        await new Promise(r => setTimeout(r, 100));
+      }
 
       if (res.success) {
         setResult(res);
-        pushLog("success", "═══════════════════════════════════════");
-        pushLog("success", `✓ Transaction Confirmed Successfully!`);
-        pushLog("success", `  Signature: ${res.signature}`);
-        pushLog("success", `  Total attempts: ${res.attempts || 1}`);
-        pushLog("success", "═══════════════════════════════════════");
-        if (res.logs) setSdkLogs(res.logs);
+        setTxStatus("confirmed");
         addToHistory({ signature: res.signature || "", method: "sendra", success: true, amount, receiver, attempts: res.attempts || 1 });
       } else {
-        pushLog("error", `✗ Transaction Failed: ${res.error}`);
         setResult(res);
-        if (res.logs) setSdkLogs(res.logs);
+        setTxStatus("failed");
+        pushLog("error", `✗ Transaction Failed: ${res.error}`);
         addToHistory({ signature: res.signature || "", method: "sendra", success: false, amount, receiver, attempts: res.attempts || 1 });
       }
     } catch (e: any) {
-      pushLog("error", `✗ Fatal Error: ${e.message}`);
+      const msg = e.message || "Unknown error";
+      if (msg.includes("User rejected") || msg.includes("rejected")) {
+        pushLog("warn", "Wallet signature rejected by user");
+        setTxStatus("failed");
+        setResult({ success: false, error: "Wallet rejected", attempts: 0 });
+      } else if (msg.includes("RPC") || msg.includes("fetch") || msg.includes("Network")) {
+        pushLog("error", `RPC Error: ${msg}`);
+        setTxStatus("failed");
+        setResult({ success: false, error: msg, attempts: 0 });
+      } else {
+        pushLog("error", `✗ Error: ${msg}`);
+        setTxStatus("failed");
+        setResult({ success: false, error: msg, attempts: 0 });
+      }
     } finally {
       setLoading(false);
     }
@@ -216,6 +328,9 @@ export default function DemoPage() {
     setSdkLogs([]);
     setIsSendraTx(false);
     setActiveTab("dashboard");
+    setCompletedStages(new Set());
+    setActiveStage(null);
+    setTxStatus("initializing");
 
     pushLog("info", "─── Standard Solana Transaction (No Sendra) ───");
     pushLog("info", "Step 1/5: Connecting to Solana Devnet RPC...");
@@ -241,6 +356,7 @@ export default function DemoPage() {
       const signedTx = await signTransaction(tx);
       pushLog("success", "  ✓ Transaction signed successfully");
       pushLog("info", "Step 4/5: Broadcasting to network...");
+      setTxStatus("broadcasting");
       const signature = await connection.sendTransaction(signedTx);
       pushLog("info", `  → Signature: ${signature.slice(0, 16)}...`);
       pushLog("info", "Step 5/5: Waiting for on-chain confirmation...");
@@ -248,14 +364,21 @@ export default function DemoPage() {
       const confirmation = await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
       if (confirmation.value.err) { throw new Error(confirmation.value.err.toString()); }
       setResult({ success: true, signature, attempts: 1 });
+      setTxStatus("confirmed");
       pushLog("success", "═══════════════════════════════════════");
       pushLog("success", `✓ Transaction Confirmed!`);
       pushLog("success", `  Signature: ${signature}`);
       pushLog("success", "═══════════════════════════════════════");
       addToHistory({ signature, method: "standard", success: true, amount, receiver, attempts: 1 });
     } catch (e: any) {
-      pushLog("error", `✗ Failed: ${e.message}`);
-      setResult({ success: false, error: e.message, attempts: 1 });
+      const msg = e.message || "Unknown error";
+      if (msg.includes("User rejected") || msg.includes("rejected")) {
+        pushLog("warn", "Wallet signature rejected by user");
+      } else {
+        pushLog("error", `✗ Failed: ${msg}`);
+      }
+      setResult({ success: false, error: msg, attempts: 1 });
+      setTxStatus("failed");
       addToHistory({ signature: "", method: "standard", success: false, amount, receiver, attempts: 1 });
     } finally {
       setLoading(false);
@@ -268,14 +391,17 @@ export default function DemoPage() {
     return `${b58.slice(0, 4)}..${b58.slice(-4)}`;
   }, [connected, publicKey]);
 
-  const currentPipelineStep = useMemo(() => {
-    if (!isSendraTx || sdkLogs.length === 0) return null;
-    return sdkLogs[sdkLogs.length - 1]?.step || null;
-  }, [isSendraTx, sdkLogs]);
-
-  const pipelineComplete = useMemo(() => {
-    return result !== null && !loading;
-  }, [result, loading]);
+  // Status label for the header
+  const statusLabel = useMemo(() => {
+    switch (txStatus) {
+      case "idle": return { text: "Idle — Awaiting Transaction", color: "text-white/20", dot: "bg-white/10" };
+      case "initializing": return { text: "Initializing Pipeline", color: "text-indigo-400/80", dot: "bg-indigo-400" };
+      case "broadcasting": return { text: "Broadcasting to Network", color: "text-amber-400/80", dot: "bg-amber-400" };
+      case "retrying": return { text: "Retrying Transaction", color: "text-amber-400/80", dot: "bg-amber-400" };
+      case "confirmed": return { text: "Transaction Confirmed", color: "text-emerald-400/80", dot: "bg-emerald-400" };
+      case "failed": return { text: "Transaction Failed", color: "text-red-400/80", dot: "bg-red-400" };
+    }
+  }, [txStatus]);
 
   const sidebarItems: { id: SidebarTab; icon: React.ReactNode; label: string }[] = [
     { id: "dashboard", icon: <Icons.Dashboard />, label: "Dashboard" },
@@ -497,18 +623,16 @@ export default function DemoPage() {
                       )}
                       <AnimatePresence initial={false}>
                         {logs.map((log) => (
-                          <motion.div key={log.id} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.15 }} className="flex gap-3 leading-relaxed">
-                            <span className="text-white/[0.08] shrink-0 select-none">[{log.time}]</span>
+                          <motion.div key={log.id} initial={{ opacity: 0, x: -7 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.24 }} className="flex items-start gap-2.5 leading-relaxed">
+                            <span className={`mt-[5px] w-1.5 h-1.5 rounded-full flex-shrink-0 ${log.type === "error" ? "bg-red-400" : log.type === "success" ? "bg-emerald-400" : log.type === "warn" ? "bg-amber-400" : "bg-white/14"}`} />
+                            <span className="text-white/[0.08] shrink-0 select-none text-[10px]">{log.time}</span>
                             <span className={log.type === "error" ? "text-red-400" : log.type === "success" ? "text-emerald-400" : log.type === "warn" ? "text-amber-400" : "text-white/40"}>{log.message}</span>
                           </motion.div>
                         ))}
                       </AnimatePresence>
                       {loading && (
-                        <div className="flex items-center gap-1.5 pt-1">
-                          <span className="text-white/[0.08]">$</span>
-                          <div className="flex gap-0.5">
-                            {[0, 1, 2].map(i => (<motion.div key={i} className="w-1 h-1 rounded-full bg-indigo-400/50" animate={{ opacity: [0.2, 0.8, 0.2] }} transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }} />))}
-                          </div>
+                        <div className="flex gap-1 pl-4 pt-1">
+                          {[0, 1, 2].map(i => (<motion.div key={i} className="w-1 h-1 rounded-full bg-white/14" animate={{ opacity: [0.14, 0.6, 0.14] }} transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }} />))}
                         </div>
                       )}
                     </div>
@@ -518,22 +642,12 @@ export default function DemoPage() {
 
                     <div className="flex-shrink-0 px-4 py-2 border-b border-white/[0.06]" style={{ background: "rgba(0,0,0,0.2)" }}>
                       <div className="flex items-center gap-2">
-                        {loading ? (
-                          <>
-                            <motion.div className="w-2 h-2 rounded-full bg-indigo-400" animate={{ scale: [1, 1.4, 1], opacity: [0.6, 1, 0.6] }} transition={{ duration: 1.2, repeat: Infinity }} />
-                            <span className="text-[10px] font-mono text-indigo-400/80 uppercase tracking-wider">{isSendraTx ? "Sendra Pipeline Active" : "Standard TX Processing"}</span>
-                          </>
-                        ) : result ? (
-                          <>
-                            <div className={`w-2 h-2 rounded-full ${result.success ? "bg-emerald-400" : "bg-red-400"}`} />
-                            <span className={`text-[10px] font-mono uppercase tracking-wider ${result.success ? "text-emerald-400/80" : "text-red-400/80"}`}>{result.success ? "Transaction Confirmed" : "Transaction Failed"}</span>
-                          </>
+                        {(txStatus === "initializing" || txStatus === "broadcasting" || txStatus === "retrying") ? (
+                          <motion.div className={`w-2 h-2 rounded-full ${statusLabel!.dot}`} animate={{ scale: [1, 1.4, 1], opacity: [0.6, 1, 0.6] }} transition={{ duration: 1.2, repeat: Infinity }} />
                         ) : (
-                          <>
-                            <div className="w-2 h-2 rounded-full bg-white/10" />
-                            <span className="text-[10px] font-mono text-white/20 uppercase tracking-wider">Idle — Awaiting Transaction</span>
-                          </>
+                          <div className={`w-2 h-2 rounded-full ${statusLabel!.dot}`} />
                         )}
+                        <span className={`text-[10px] font-mono uppercase tracking-wider ${statusLabel!.color}`}>{statusLabel!.text}</span>
                       </div>
                     </div>
 
@@ -545,17 +659,25 @@ export default function DemoPage() {
                         <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">Result</span>
                       </div>
                       <AnimatePresence mode="wait">
-                        {loading ? (
+                        {(txStatus === "initializing" || txStatus === "broadcasting" || txStatus === "retrying") ? (
                           <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                             className="flex items-center gap-3 p-3 rounded-lg border border-indigo-500/20 bg-indigo-500/[0.03]">
                             <div className="w-5 h-5 rounded-full border-t-2 border-r-2 border-indigo-500 animate-spin flex-shrink-0" />
                             <div>
-                              <div className="text-[11px] font-mono text-indigo-400">{isSendraTx ? "Sendra Processing" : "Standard TX"}</div>
-                              <div className="text-[9px] font-mono text-white/25">{isSendraTx ? "Routing through pipeline..." : "Sending to RPC..."}</div>
+                              <div className="text-[11px] font-mono text-indigo-400">
+                                {txStatus === "initializing" && "Initializing Pipeline"}
+                                {txStatus === "broadcasting" && "Broadcasting to Network"}
+                                {txStatus === "retrying" && "Retrying Transaction"}
+                              </div>
+                              <div className="text-[9px] font-mono text-white/25">
+                                {txStatus === "initializing" && "Setting up reliability layer..."}
+                                {txStatus === "broadcasting" && "Waiting for on-chain confirmation..."}
+                                {txStatus === "retrying" && "Re-routing through new node..."}
+                              </div>
                             </div>
                           </motion.div>
-                        ) : result ? (
-                          <motion.div key="result" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
+                        ) : (txStatus === "confirmed" || txStatus === "failed") && result ? (
+                          <motion.div key="result" initial={{ opacity: 0, scale: 0.95, y: 4 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.35, ease: "easeOut" }}
                             className={`p-3 rounded-lg border ${result.success ? "bg-emerald-500/5 border-emerald-500/20" : "bg-red-500/5 border-red-500/20"}`}>
                             <div className="flex items-center gap-2 mb-2">
                               <div className={`p-1.5 rounded-lg ${result.success ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>
@@ -566,7 +688,7 @@ export default function DemoPage() {
                             <div className="space-y-2">
                               <div>
                                 <div className="text-[8px] font-mono text-white/15 uppercase tracking-widest mb-0.5">Signature</div>
-                                <div className="text-[10px] font-mono text-white/40 break-all">{result.signature || "n/a"}</div>
+                                <div className="text-[10px] font-mono text-white/40 break-all">{result.signature || result.error || "n/a"}</div>
                               </div>
                               {result.signature && (
                                 <a href={`https://explorer.solana.com/tx/${result.signature}?cluster=devnet`} target="_blank" rel="noopener noreferrer"
@@ -610,38 +732,37 @@ export default function DemoPage() {
                         )}
                       </div>
                       <div>
-                        {PIPELINE_STAGES.map((stage, idx) => {
-                          const stageIndex = PIPELINE_STAGES.findIndex(s => s.id === currentPipelineStep);
-                          const isActive = currentPipelineStep === stage.id;
-                          const isDone = stageIndex >= 0 && idx < stageIndex;
-                          const isAllDone = pipelineComplete && result?.success && stage.id !== "RETRY";
-                          const isRetryActive = currentPipelineStep === "RETRY" && stage.id === "RETRY";
-                          const showRetry = stage.id === "RETRY";
-                          if (showRetry && !isRetryActive && !sdkLogs.some(l => l.step === "RETRY")) return null;
+                        {PIPELINE_STAGES.map((stage) => {
+                          const isActive = activeStage === stage.id && txStatus !== "confirmed" && txStatus !== "failed";
+                          const isDone = completedStages.has(stage.id) && activeStage !== stage.id;
+                          const isDoneAndFinished = completedStages.has(stage.id) && (txStatus === "confirmed" || txStatus === "failed");
+                          const isRetry = stage.id === "RETRY";
+                          const hasRetry = sdkLogs.some(l => l.step === "RETRY_ATTEMPT");
+                          if (isRetry && !hasRetry && !isActive) return null;
 
                           return (
-                            <div key={stage.id} className={`flex items-center gap-2.5 py-[5px] px-2 rounded transition-all duration-300 ${isActive ? "bg-indigo-500/[0.08]" : ""
-                              }`}>
+                            <motion.div key={stage.id}
+                              initial={false}
+                              animate={{ backgroundColor: isActive ? "rgba(99,102,241,0.08)" : "rgba(0,0,0,0)" }}
+                              className="flex items-center gap-2.5 py-[5px] px-2 rounded">
                               <div className="flex-shrink-0 w-4 flex items-center justify-center">
                                 {isActive ? (
                                   <motion.div className="w-2 h-2 rounded-full bg-indigo-400" animate={{ scale: [1, 1.4, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 1.2, repeat: Infinity }} />
-                                ) : isDone || isAllDone ? (
-                                  <div className="w-2 h-2 rounded-full bg-emerald-400/60" />
-                                ) : isRetryActive ? (
-                                  <motion.div className="w-2 h-2 rounded-full bg-amber-400" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 1, repeat: Infinity }} />
+                                ) : isDone || isDoneAndFinished ? (
+                                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 25 }} className="w-2 h-2 rounded-full bg-emerald-400/60" />
                                 ) : (
                                   <div className="w-1.5 h-1.5 rounded-full border border-white/15" />
                                 )}
                               </div>
-                              <span className={`text-[10px] font-mono font-bold tracking-wider flex-1 ${isActive ? "text-indigo-400" :
-                                isDone || isAllDone ? "text-white/45" :
-                                  isRetryActive ? "text-amber-400" :
-                                    "text-white/15"
-                                }`}>{stage.label}</span>
-                              <span className={`text-[8px] font-mono ${isActive ? "text-white/25" : "text-white/8"}`}>
+                              <span className={`text-[10px] font-mono font-bold tracking-wider flex-1 transition-colors duration-300 ${
+                                isActive ? "text-indigo-400" :
+                                isDone || isDoneAndFinished ? "text-white/45" :
+                                "text-white/15"
+                              }`}>{stage.label}</span>
+                              <span className={`text-[8px] font-mono transition-colors duration-300 ${isActive ? "text-white/25" : isDone || isDoneAndFinished ? "text-white/12" : "text-white/8"}`}>
                                 {stage.desc}
                               </span>
-                            </div>
+                            </motion.div>
                           );
                         })}
                       </div>
@@ -652,20 +773,23 @@ export default function DemoPage() {
                         <div className="flex items-center gap-2 mb-2">
                           <Icons.Flow />
                           <span className="text-[10px] font-mono text-indigo-400/40 uppercase tracking-widest">Execution Trace</span>
+                          <span className="text-[8px] font-mono text-white/10 ml-auto">{sdkLogs.length} events</span>
                         </div>
                         <div className="space-y-1.5">
+                          <AnimatePresence initial={false}>
                           {sdkLogs.map((log, idx) => (
-                            <motion.div key={idx} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}
-                              className="p-2 rounded-lg bg-black/30 border border-white/[0.04] font-mono text-[10px] flex flex-col gap-0.5">
+                            <motion.div key={log._ts + '-' + idx} initial={{ opacity: 0, x: -8, height: 0 }} animate={{ opacity: 1, x: 0, height: "auto" }} transition={{ duration: 0.25 }}
+                              className="p-2 rounded-lg bg-black/30 border border-white/[0.04] font-mono text-[10px] flex flex-col gap-0.5 overflow-hidden">
                               <div className="flex items-center justify-between">
                                 <span className={`font-bold tracking-wider ${log.step.includes("RETRY") || log.step.includes("FAIL") ? "text-amber-400" : log.step.includes("SUCCESS") || log.step.includes("CONFIRM") ? "text-emerald-400" : "text-indigo-400"}`}>[{log.step}]</span>
                                 {log.attempt !== undefined && (<span className="text-white/15 text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/[0.06]">Attempt {log.attempt}</span>)}
                               </div>
-                              <span className="text-white/50">{log.message}</span>
+                              {log.message && <span className="text-white/50">{log.message}</span>}
                               {log.rpc && (<span className="text-white/20 text-[9px] truncate break-all">RPC: {log.rpc}</span>)}
-                              {log.fee && (<span className="text-white/20 text-[9px]">Fee: {log.fee}</span>)}
+                              {log.fee !== undefined && (<span className="text-white/20 text-[9px]">Fee: {log.fee}</span>)}
                             </motion.div>
                           ))}
+                          </AnimatePresence>
                         </div>
                       </div>
                     )}
