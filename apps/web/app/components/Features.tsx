@@ -25,7 +25,6 @@ function ArchNode({ label, x, y, w = 140, accent = false }: { label: string; x: 
     );
 }
 
-/* ─── Connection line ─── */
 function ConnLine({ x1, y1, x2, y2 }: { x1: number; y1: number; x2: number; y2: number }) {
     return (
         <line
@@ -37,11 +36,9 @@ function ConnLine({ x1, y1, x2, y2 }: { x1: number; y1: number; x2: number; y2: 
     );
 }
 
-/* ─── Architecture SVG Diagram ─── */
 function ArchitectureDiagram() {
     return (
         <svg viewBox="0 0 600 380" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "100%", height: "100%" }}>
-            {/* Connection lines */}
             <ConnLine x1={300} y1={48} x2={300} y2={72} />
             <ConnLine x1={300} y1={110} x2={180} y2={145} />
             <ConnLine x1={300} y1={110} x2={300} y2={145} />
@@ -56,31 +53,24 @@ function ArchitectureDiagram() {
             <ConnLine x1={480} y1={256} x2={420} y2={290} />
             <ConnLine x1={300} y1={328} x2={300} y2={348} />
 
-            {/* SDK Entry point */}
             <ArchNode label="@repo/sdk" x={230} y={20} accent />
 
-            {/* Core */}
             <ArchNode label="@repo/core" x={230} y={72} accent />
 
-            {/* Layer 2 */}
             <ArchNode label="@repo/logger" x={110} y={145} />
             <ArchNode label="@repo/fee-optimizer" x={250} y={145} w={100} />
             <ArchNode label="@repo/retry-engine" x={370} y={145} w={120} />
 
-            {/* Layer 3 */}
             <ArchNode label="@repo/simulator" x={50} y={218} />
             <ArchNode label="@repo/router" x={200} y={218} w={100} />
             <ArchNode label="@repo/tx-builder" x={320} y={218} w={110} />
             <ArchNode label="@repo/rpc-client" x={450} y={218} w={110} />
 
-            {/* Layer 4 */}
             <ArchNode label="@repo/types" x={110} y={290} />
             <ArchNode label="@repo/config" x={350} y={290} />
 
-            {/* Solana */}
             <ArchNode label="@solana/web3.js" x={230} y={348} w={140} accent />
 
-            {/* Decorative glow */}
             <circle cx={300} cy={200} r={160} fill="url(#glow)" opacity={0.15} />
             <defs>
                 <radialGradient id="glow">
@@ -92,7 +82,6 @@ function ArchitectureDiagram() {
     );
 }
 
-/* ─── Animated counter for real-time ─── */
 function PulsingDot() {
     return (
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
@@ -109,7 +98,6 @@ function PulsingDot() {
     );
 }
 
-/* ─── Feature Card ─── */
 function FeatureCard({ title, desc, icon, delay = 0 }: { title: string; desc: string; icon: React.ReactNode; delay?: number }) {
     return (
         <motion.div
@@ -141,7 +129,6 @@ function FeatureCard({ title, desc, icon, delay = 0 }: { title: string; desc: st
     );
 }
 
-/* ─── Icons ─── */
 const icons = {
     bolt: (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E8734A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -160,14 +147,12 @@ const icons = {
     ),
 };
 
-/* ─── Main Features Section ─── */
 export default function Features() {
     return (
         <>
             <section className="relative z-10">
                 <Divider />
                 <div style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 24px" }}>
-                    {/* Section Header */}
                     <div style={{ marginBottom: 56 }}>
                         <div style={{
                             display: "inline-flex", alignItems: "center", gap: 8,
@@ -186,10 +171,8 @@ export default function Features() {
                         </p>
                     </div>
 
-                    {/* Top Row: Architecture (large) + Real-time Sync (small) */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20, marginBottom: 20 }} className="lg:!grid-cols-[2fr_1fr]">
 
-                        {/* Architecture Card */}
                         <motion.div
                             initial={{ opacity: 0, y: 24 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -212,7 +195,6 @@ export default function Features() {
                                 </p>
                             </div>
                             <div style={{ padding: "20px 16px 0", position: "relative" }}>
-                                {/* Background glow */}
                                 <div style={{
                                     position: "absolute", inset: 0,
                                     background: "radial-gradient(ellipse at 50% 80%, rgba(232,115,74,0.06) 0%, transparent 70%)",
@@ -222,7 +204,6 @@ export default function Features() {
                             </div>
                         </motion.div>
 
-                        {/* Real-time Data Sync Card */}
                         <motion.div
                             initial={{ opacity: 0, y: 24 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -237,7 +218,6 @@ export default function Features() {
                                 flexDirection: "column",
                             }}
                         >
-                            {/* Background image */}
                             <div style={{
                                 position: "absolute", inset: 0,
                                 backgroundImage: "url(/hero_bg.jpg)",
@@ -262,7 +242,6 @@ export default function Features() {
                                 </p>
                             </div>
 
-                            {/* Animated log lines */}
                             <div style={{
                                 position: "relative", zIndex: 1, flex: 1,
                                 padding: "24px 28px 28px",
@@ -311,7 +290,6 @@ export default function Features() {
                         </motion.div>
                     </div>
 
-                    {/* Bottom Row: Three equal feature cards */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20 }} className="md:!grid-cols-3">
                         <FeatureCard
                             title="Smart Fee Optimization"
