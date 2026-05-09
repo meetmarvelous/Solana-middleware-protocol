@@ -5,12 +5,12 @@ import { GhostButton, PrimaryButton } from "@repo/ui/button";
 export default function Header() {
     return (
         <>
-            <header className="sticky top-0 z-50 w-full"
+            <header className="fixed top-0 z-50 w-full"
                 style={{
                     backdropFilter: "blur(20px) saturate(1.4)",
                     WebkitBackdropFilter: "blur(20px) saturate(1.4)",
                     borderBottom: "1px solid rgba(255,255,255,0.045)",
-                    background: "rgba(7,7,9,0.82)",
+                    background: "rgba(7,7,9,0.3)",
                 }}>
                 <nav className="flex items-center justify-between px-8 py-4 max-w-7xl mx-auto">
                     <div className="flex flex-1">

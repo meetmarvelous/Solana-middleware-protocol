@@ -42,7 +42,7 @@ export function PrimaryButton({ children, size, className = "" }: { children: st
       className={`relative group ${sizeClasses[size]} bg-white text-black font-semibold tracking-wide rounded hover:bg-white/90 transition-colors uppercase overflow-hidden ${className}`}
     >
       <div className="absolute top-0 -left-[120%] w-[60%] h-full transform -skew-x-12 bg-gradient-to-r from-transparent via-black/10 to-transparent group-hover:left-[150%] transition-all duration-700 ease-in-out" />
-      <span className="relative z-10 flex items-center justify-center">
+      <span className="relative z-10 flex items-center justify-center whitespace-nowrap">
         <DecoderText text={children} isHovered={isHovered} />
       </span>
     </motion.button>
@@ -61,7 +61,7 @@ export function GhostButton({ children, size, className = "" }: { children: stri
       className={`relative group ${sizeClasses[size]} bg-white/5 text-white/90 font-semibold tracking-wide rounded hover:bg-white/10 border border-white/10 transition-colors uppercase overflow-hidden ${className}`}
     >
       <div className="absolute top-0 -left-[120%] w-[60%] h-full transform -skew-x-12 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:left-[150%] transition-all duration-700 ease-in-out" />
-      <span className="relative z-10 flex items-center justify-center">
+      <span className="relative z-10 flex items-center justify-center whitespace-nowrap">
         <DecoderText text={children} isHovered={isHovered} />
       </span>
     </motion.button>

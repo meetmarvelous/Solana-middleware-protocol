@@ -39,9 +39,9 @@ export function DecoderText({ text, isHovered }: { text: string; isHovered: bool
 
     return (
         <span className="relative inline-flex flex-col items-center justify-center">
-            <span className={isHovered ? "opacity-0 pointer-events-none whitespace-pre" : "whitespace-pre"}>{text}</span>
+            <span className={isHovered ? "opacity-0 pointer-events-none whitespace-nowrap" : "whitespace-nowrap"}>{text}</span>
             {isHovered && (
-                <span className="absolute w-full font-mono tracking-tighter flex items-center justify-center whitespace-pre text-[11px] text-center">
+                <span className="absolute left-1/2 -translate-x-1/2 w-max font-mono tracking-tighter flex items-center justify-center whitespace-nowrap text-[11px] text-center">
                     {displayText}
                 </span>
             )}
