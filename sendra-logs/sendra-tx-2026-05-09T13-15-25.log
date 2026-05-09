@@ -1,0 +1,18 @@
+[13:15:25] [RPC_SELECTED]
+RPC: https://helius.rpc.com
+Latency: 41ms
+
+[13:15:25] [FEE_OPTIMIZED]
+Initial Fee: 5000
+
+[13:15:25] [RETRY_ATTEMPT #1]
+Reason: BLOCKHASH_EXPIRED
+
+[13:15:25] [ACTION]
+Switching RPC
+
+[13:15:25] [TX_CONFIRMED]
+Signature: xxxxxxxx
+
+[13:15:25] [EXECUTION_COMPLETED]
+Total Execution Time: 26ms

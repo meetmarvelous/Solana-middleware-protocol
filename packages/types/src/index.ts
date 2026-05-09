@@ -83,6 +83,7 @@ export type LogEvent = {
     attempt?: number;
     fee?: number;
     message?: string;
+    latency?: number;
 };
 
 export type logs = LogEvent[];

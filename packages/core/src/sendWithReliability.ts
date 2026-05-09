@@ -4,7 +4,7 @@ import { SimulateTx } from "@repo/simulator";
 import { SendTx } from "@repo/rpc-client"
 import { BuildTx, newTxMessageFromOld } from "@repo/tx-builder";
 import { optimizeFee } from "@repo/fee-optimizer";
-import { ConfirmTx, classifyFailure } from "@repo/logger";
+import { ConfirmTx, classifyFailure, FileLogger } from "@repo/logger";
 import { logEvent } from "@repo/logger";
 import { Connection, VersionedTransaction } from "@solana/web3.js";
 
@@ -12,12 +12,19 @@ export async function SendWithReliability(params: SendraParams, signer: Signer, 
     const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
     let attempt = 0;
     const logs: logs = [];
-    const logger = options?.logger;
+    
+    const fileLogger = new FileLogger();
+    const originalLogger = options?.logger;
+    const logger = (event: LogEvent) => {
+        fileLogger.log(event);
+        if (originalLogger) originalLogger(event);
+    };
 
     const rpc = await selectRpc();
     logEvent({
         step: "RPC_SELECTED",
         rpc: rpc.url,
+        latency: rpc.latency,
     }, logs, logger);
 
     let tx: DeserializedTx, lastValidBlockHeight: number;
@@ -103,6 +110,7 @@ export async function SendWithReliability(params: SendraParams, signer: Signer, 
                 rpc: rpc.url,
                 message: error.message
             }, logs, logger);
+            fileLogger.close();
             throw error;
         }
     }
@@ -113,6 +121,7 @@ export async function SendWithReliability(params: SendraParams, signer: Signer, 
             logEvent({
                 step: "TX_CONFIRMED",
                 rpc: rpc.url,
+                message: signature,
             }, logs, logger);
             return { ...result, logs };
         } else {
@@ -145,7 +154,8 @@ export async function SendWithReliability(params: SendraParams, signer: Signer, 
         logEvent({
             step: "RPC_SELECTED",
             attempt: attempt,
-            rpc: currentRpc.url
+            rpc: currentRpc.url,
+            latency: currentRpc.latency,
         }, logs, logger);
 
         let newTx: VersionedTransaction;
@@ -222,6 +232,7 @@ export async function SendWithReliability(params: SendraParams, signer: Signer, 
             if (failureReason === "RPC_ERROR") {
                 continue;
             }
+            fileLogger.close();
             throw error;
         }
 
@@ -250,7 +261,8 @@ export async function SendWithReliability(params: SendraParams, signer: Signer, 
         if (result.success) {
             logEvent({
                 step: "TX_CONFIRMED_AFTER_RETRY",
-                attempt: attempt
+                attempt: attempt,
+                message: signature,
             }, logs, logger);
             return { ...result, logs };
         }
