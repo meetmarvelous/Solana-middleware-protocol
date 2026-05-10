@@ -4,6 +4,10 @@ import * as React from "react";
 import { Check, Copy, Terminal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+const TerminalIcon = Terminal as any;
+const CheckIcon = Check as any;
+const CopyIcon = Copy as any;
+
 interface CommandBoxProps {
   command: {
     pnpm?: string;
@@ -32,7 +36,7 @@ export function CommandBox({ command }: CommandBoxProps) {
       <div className="flex items-center justify-between border-b border-white/2 px-3 py-1.5">
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center w-6 h-6 rounded bg-white/5">
-            <Terminal className="h-3.5 w-3.5 text-zinc-400" />
+            <TerminalIcon className="h-3.5 w-3.5 text-zinc-400" />
           </div>
           {isMulti ? (
             <div className="flex gap-1">
@@ -59,7 +63,7 @@ export function CommandBox({ command }: CommandBoxProps) {
           onClick={handleCopy}
           className="rounded-md p-1.5 text-zinc-500 transition-all hover:bg-white/5 hover:text-white"
         >
-          {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? <CheckIcon className="h-3.5 w-3.5 text-green-400" /> : <CopyIcon className="h-3.5 w-3.5" />}
         </button>
       </div>
       <div className="p-5">
