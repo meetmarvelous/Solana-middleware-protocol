@@ -13,10 +13,6 @@ Reliable transaction execution layer for Solana.
 ## Quick Links
 
 - [npm package](https://www.npmjs.com/package/sendra-tx)
-- [Docs Website]<!-- Add docs URL -->
-- [GitHub Repo]<!-- Add GitHub URL -->
-- [Dashboard Demo Video]<!-- Add dashboard demo video URL -->
-- [SDK Demo Video]<!-- Add SDK demo video URL -->
 
 ---
 
