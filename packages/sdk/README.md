@@ -48,24 +48,40 @@ bun add sendra-tx @solana/web3.js
 ## Quick Start
 
 ```typescript
-import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { SendWithReliability } from "sendra-tx";
+import { Keypair, PublicKey } from "@solana/web3.js";
 
-const connection = new Connection("https://api.mainnet-beta.solana.com");
-const signer = Keypair.generate();
-const receiver = new PublicKey("11111111111111111111111111111111");
-const amount = 1_000_000;
+// 1. Initialize your keys
+const sender = Keypair.generate();
+const receiver = new PublicKey("5XnBq7zdcMQHtqN4jrSqLGC7BzQhcLT7ubEzVCcrz42E");
 
+// 2. Define a signer object (compatible with wallet adapters)
+const signer = {
+    publicKey: sender.publicKey,
+    signTransaction: async (tx: any) => {
+        tx.sign([sender]);
+        return tx;
+    },
+};
+
+// 3. Execute with reliability
 async function main() {
-  const result = await SendWithReliability({
-    connection,
-    signer,
-    receiver,
-    amount,
-    maxRetries: 5
-  });
+    const result = await SendWithReliability(
+        {
+            type: "params",
+            to: receiver,
+            amount: 1000000, // amount in lamports
+        },
+        signer,
+        {
+            maxRetries: 3,
+        }
+    );
 
-  console.log(`Transaction executed successfully: ${result.signature}`);
+    if (result.success) {
+        console.log(`Transaction successful: ${result.signature}`);
+        console.log(`Explorer Link: ${result.explorerLink}`);
+    }
 }
 
 main();
@@ -80,18 +96,24 @@ import { VersionedTransaction } from "@solana/web3.js";
 import { SendWithReliability } from "sendra-tx";
 
 async function executeComplexTx(
-  connection: Connection,
-  signer: Keypair,
-  transaction: VersionedTransaction
+    transaction: VersionedTransaction,
+    signer: any // Your signer object with signTransaction method
 ) {
-  const result = await SendWithReliability({
-    connection,
-    signer,
-    transaction,
-    maxRetries: 5
-  });
+    const result = await SendWithReliability(
+        {
+            type: "built",
+            serializedTx: false,
+            transaction: transaction,
+        },
+        signer,
+        {
+            maxRetries: 5,
+        }
+    );
 
-  console.log(`Complex transaction confirmed: ${result.signature}`);
+    if (result.success) {
+        console.log(`Complex transaction confirmed: ${result.signature}`);
+    }
 }
 ```
 
