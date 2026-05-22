@@ -9,7 +9,8 @@
     "build": "tsc --build",
     "lint": "eslint . --max-warnings 0",
     "generate:component": "turbo gen react-component",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "vitest run --config ../../vitest.config.ts packages/ui/src --passWithNoTests"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",

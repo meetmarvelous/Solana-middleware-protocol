@@ -9,9 +9,10 @@ export class FileLogger {
         this.startTime = Date.now();
         if (typeof process !== "undefined" && process.versions && process.versions.node) {
             try {
-                const fs = require("fs");
-                const path = require("path");
-                
+                const nodeRequire = eval("require");
+                const fs = nodeRequire("fs");
+                const path = nodeRequire("path");
+
                 const logDir = path.join(process.cwd(), "sendra-logs");
                 if (!fs.existsSync(logDir)) {
                     fs.mkdirSync(logDir, { recursive: true });

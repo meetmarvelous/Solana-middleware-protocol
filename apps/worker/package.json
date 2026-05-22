@@ -6,7 +6,8 @@
   "scripts": {
     "build": "bun build src/worker.ts --outdir dist --target bun",
     "start": "bun run dist/worker.js",
-    "dev": "bun run --watch src/worker.ts"
+    "dev": "bun run --watch src/worker.ts",
+    "test": "vitest run --config ../../vitest.config.ts apps/worker/src --passWithNoTests"
   },
   "devDependencies": {
     "@types/bun": "latest",
