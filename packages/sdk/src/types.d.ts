@@ -1,3 +1,4 @@
+import { Network } from "@repo/types";
 import { PublicKey, VersionedTransaction } from "@solana/web3.js";
 
 export type SerializedTx = Uint8Array;
@@ -81,5 +82,6 @@ export type SendraResult = {
 export declare function SendWithReliability(
   params: SendraParams,
   signer: Signer,
-  options: SendraOptions
+  options: SendraOptions,
+  network: Network
 ): Promise<SendraResult>;
