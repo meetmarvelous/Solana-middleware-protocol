@@ -87,3 +87,5 @@ export type LogEvent = {
 };
 
 export type logs = LogEvent[];
+
+export type Network = "mainnet" | "devnet";

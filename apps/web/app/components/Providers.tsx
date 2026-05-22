@@ -3,12 +3,10 @@
 import { useMemo } from "react";
 import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { SOLANA_DEVNET_RPC_URL } from "@repo/config";
-
 import "@solana/wallet-adapter-react-ui/styles.css";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const endpoint = useMemo(() => SOLANA_DEVNET_RPC_URL, []);
+  const endpoint = useMemo(() => "https://api.devnet.solana.com", []);
 
   return (
     <ConnectionProvider endpoint={endpoint}>

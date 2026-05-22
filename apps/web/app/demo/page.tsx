@@ -173,6 +173,7 @@ export default function DemoPage() {
   const [completedStages, setCompletedStages] = useState<Set<string>>(new Set());
   const [activeStage, setActiveStage] = useState<string | null>(null);
   const [txStatus, setTxStatus] = useState<TxStatus>("idle");
+  const [network, setNetwork] = useState<"devnet" | "mainnet">("devnet");
   const terminalRef = useRef<HTMLDivElement>(null);
   const logQueueRef = useRef<any[]>([]);
   const processingRef = useRef(false);
@@ -264,7 +265,8 @@ export default function DemoPage() {
       const res = await SendWithReliability(
         { type: "params", to: new PublicKey(receiver), amount: Number(amount) },
         signer,
-        { maxRetries: 3, logger: realtimeLogger }
+        { maxRetries: 3, logger: realtimeLogger },
+        network
       ) as any;
 
       await new Promise(r => setTimeout(r, 500));
@@ -323,12 +325,12 @@ export default function DemoPage() {
     setTxStatus("initializing");
 
     pushLog("info", "─── Standard Solana Transaction (No Sendra) ───");
-    pushLog("info", "Step 1/5: Connecting to Solana Devnet RPC...");
-    pushLog("info", "  → Using default RPC: api.devnet.solana.com");
+    pushLog("info", `Step 1/5: Connecting to Solana ${network === "mainnet" ? "Mainnet" : "Devnet"} RPC...`);
+    pushLog("info", `  → Using default RPC: api.${network === "mainnet" ? "mainnet-beta" : "devnet"}.solana.com`);
     pushLog("warn", "  ⚠ No simulation, fee optimization, or retry logic will be applied");
 
     try {
-      const rpcUrl = "https://api.devnet.solana.com";
+      const rpcUrl = network === "mainnet" ? "https://api.mainnet-beta.solana.com" : "https://api.devnet.solana.com";
       const connection = new Connection(rpcUrl, "confirmed");
       pushLog("info", "Step 2/5: Building transaction payload...");
       pushLog("info", `  → From: ${publicKey.toBase58().slice(0, 8)}...${publicKey.toBase58().slice(-4)}`);
@@ -412,9 +414,14 @@ export default function DemoPage() {
           </Link>
           <div className="w-px h-5 bg-white/[0.08] mx-1" />
           <span className="text-[11px] font-mono text-white/25 uppercase tracking-widest">Dashboard</span>
-          <div className="px-2 py-0.5 rounded bg-indigo-500/15 border border-indigo-500/25 text-[9px] font-mono text-indigo-400 uppercase tracking-widest">
-            Devnet
-          </div>
+          <select 
+            value={network} 
+            onChange={(e) => setNetwork(e.target.value as "devnet" | "mainnet")}
+            className="px-2 py-0.5 rounded bg-indigo-500/15 border border-indigo-500/25 text-[9px] font-mono text-indigo-400 uppercase tracking-widest outline-none cursor-pointer hover:bg-indigo-500/25 transition-colors appearance-none"
+          >
+            <option value="devnet" className="bg-[#0a0a0f] text-white">DEVNET</option>
+            <option value="mainnet" className="bg-[#0a0a0f] text-white">MAINNET</option>
+          </select>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-1.5 text-[11px] font-mono text-white/30 hover:text-white/60 transition-colors">
@@ -482,7 +489,7 @@ export default function DemoPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[12px] font-mono text-white/70 font-bold tracking-tight">Sendra SDK</div>
-                  <div className="text-[9px] font-mono text-white/25">v2.1.0 · Devnet</div>
+                  <div className="text-[9px] font-mono text-white/25">v2.1.0 · {network === 'mainnet' ? 'Mainnet' : 'Devnet'}</div>
                 </div>
               </div>
             </div>
@@ -505,7 +512,7 @@ export default function DemoPage() {
                       <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_auto] gap-3 items-end">
                         <div className="flex flex-col gap-1.5">
                           <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.15em]">Receiver Address</label>
-                          <input type="text" value={receiver} onChange={(e) => setReceiver(e.target.value)} placeholder="Enter devnet public key..." disabled={loading}
+                          <input type="text" value={receiver} onChange={(e) => setReceiver(e.target.value)} placeholder={`Enter ${network} public key...`} disabled={loading}
                             className="w-full px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.07] text-[12px] text-white/80 font-mono outline-none transition-all focus:border-indigo-500/30 focus:bg-white/[0.05] placeholder:text-white/10 disabled:opacity-40" />
                         </div>
                         <div className="flex flex-col gap-1.5">
@@ -540,7 +547,7 @@ export default function DemoPage() {
                       <div className="space-y-3 flex-1">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-mono text-white/20 uppercase">Chain</span>
-                          <span className="text-[11px] font-mono text-white/60">Solana Devnet</span>
+                          <span className="text-[11px] font-mono text-white/60">Solana {network === 'mainnet' ? 'Mainnet' : 'Devnet'}</span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-mono text-white/20 uppercase">Status</span>
@@ -680,7 +687,7 @@ export default function DemoPage() {
                                 <div className="text-[10px] font-mono text-white/40 break-all">{result.signature || result.error || "n/a"}</div>
                               </div>
                               {result.signature && (
-                                <a href={`https://explorer.solana.com/tx/${result.signature}?cluster=devnet`} target="_blank" rel="noopener noreferrer"
+                                <a href={`https://explorer.solana.com/tx/${result.signature}?cluster=${network === "mainnet" ? "mainnet-beta" : "devnet"}`} target="_blank" rel="noopener noreferrer"
                                   className="flex items-center gap-1.5 text-[9px] font-mono text-indigo-400/60 hover:text-indigo-400 transition-colors">
                                   <Icons.ExternalLink /> View on Solana Explorer
                                 </a>

@@ -1,4 +1,4 @@
-import { DeserializedTx, LogEvent, logs, SendraOptions, SendraParams, SerializedTx, Signer } from "@repo/types";
+import { DeserializedTx, LogEvent, logs, SendraOptions, SendraParams, SerializedTx, Signer, Network } from "@repo/types";
 import { selectRpc } from "@repo/router"
 import { SimulateTx } from "@repo/simulator";
 import { SendTx } from "@repo/rpc-client"
@@ -8,7 +8,10 @@ import { ConfirmTx, classifyFailure, FileLogger } from "@repo/logger";
 import { logEvent } from "@repo/logger";
 import { Connection, VersionedTransaction } from "@solana/web3.js";
 
-export async function SendWithReliability(params: SendraParams, signer: Signer, options: SendraOptions) {
+export async function SendWithReliability(params: SendraParams, signer: Signer, options: SendraOptions, network: Network) {
+    if (!network) {
+        throw new Error("Network parameter is required (devnet or mainnet)");
+    }
     const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
     let attempt = 0;
     const logs: logs = [];
@@ -20,7 +23,7 @@ export async function SendWithReliability(params: SendraParams, signer: Signer, 
         if (originalLogger) originalLogger(event);
     };
 
-    const rpc = await selectRpc();
+    const rpc = await selectRpc(network);
     logEvent({
         step: "RPC_SELECTED",
         rpc: rpc.url,
@@ -150,7 +153,7 @@ export async function SendWithReliability(params: SendraParams, signer: Signer, 
             attempt: attempt
         }, logs, logger);
 
-        const currentRpc = await selectRpc();
+        const currentRpc = await selectRpc(network);
         logEvent({
             step: "RPC_SELECTED",
             attempt: attempt,

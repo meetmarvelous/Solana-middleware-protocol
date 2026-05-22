@@ -1,7 +1,18 @@
-export const SOLANA_DEVNET_RPC_URL = "https://api.devnet.solana.com" // use it for testing from postman
-export const SOLANA_ALCHEMY_RPC_URL = "https://solana-devnet.g.alchemy.com/v2/zHJtGhgb5h3-lIb9aoIlM"
-export const SOLANA_HELIUS_RPC_URL = "https://devnet.helius-rpc.com/?api-key=947560ea-5abd-434f-843e-2795916f3170"
-export const SOLANA_QUICKNODE_RPC_URL = "https://wiser-young-slug.solana-devnet.quiknode.pro/fa2a42af7526932a4d52b8a1f2523a1576950737"
+export const DEVNET_RPC_URLS = Object.entries(process.env || {})
+    .filter(([key, value]) => key.startsWith("SENDRA_DEVNET_URL_") && value)
+    .map(([_, value]) => value as string);
+
+if (DEVNET_RPC_URLS.length === 0) {
+    DEVNET_RPC_URLS.push("https://api.devnet.solana.com");
+}
+
+export const MAINNET_RPC_URLS = Object.entries(process.env || {})
+    .filter(([key, value]) => key.startsWith("SENDRA_MAINNET_URL_") && value)
+    .map(([_, value]) => value as string);
+
+if (MAINNET_RPC_URLS.length === 0) {
+    MAINNET_RPC_URLS.push("https://api.mainnet-beta.solana.com");
+}
 
 export const pipeline = [
     { label: "Select RPC", desc: "Probes multiple RPC endpoints and picks the fastest, most reliable node for your transaction." },
