@@ -1,5 +1,6 @@
 import { config } from "dotenv";
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import type { SendraOptions, SendraParams, Signer } from "sendra-tx";
 
@@ -7,7 +8,7 @@ config();
 
 type LogEvent = Parameters<NonNullable<SendraOptions["logger"]>>[0];
 
-function loadKeypair(): Keypair {
+export function loadKeypair(): Keypair {
   const secretJson = process.env.SENDER_SECRET_KEY
     ?? (process.env.SENDER_KEYPAIR_PATH ? readFileSync(process.env.SENDER_KEYPAIR_PATH, "utf8") : undefined);
 
@@ -20,14 +21,14 @@ function loadKeypair(): Keypair {
   return Keypair.fromSecretKey(Uint8Array.from(secret));
 }
 
-function devnetRpcPool(): string[] {
+export function devnetRpcPool(): string[] {
   return Object.entries(process.env)
     .filter(([key, value]) => key.startsWith("SENDRA_DEVNET_URL_") && Boolean(value))
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([, value]) => value as string);
 }
 
-function printRecoveryEvent(event: LogEvent) {
+export function printRecoveryEvent(event: LogEvent) {
   const important = new Set<LogEvent["step"]>([
     "RPC_SELECTED",
     "SEND_FAILED",
@@ -53,41 +54,53 @@ function printRecoveryEvent(event: LogEvent) {
   });
 }
 
-const pool = devnetRpcPool();
-if (pool.length < 2) {
-  throw new Error("Configure at least two SENDRA_DEVNET_URL_* values; one can be intentionally unavailable");
+export function createSigner(sender: Keypair): Signer {
+  return {
+    publicKey: sender.publicKey,
+    async signTransaction(tx) {
+      tx.sign([sender]);
+      return tx;
+    },
+  };
 }
 
-console.log("Failure recovery RPC pool:");
-pool.forEach((url, index) => console.log(`${index + 1}. ${url}`));
-console.log("The first URL may be down; Sendra should route to a healthy endpoint.");
+export function createTransferParams(recipient: PublicKey): SendraParams {
+  if (recipient.equals(PublicKey.default)) {
+    throw new Error("Set RECIPIENT_PUBLIC_KEY to a real recipient before running this example");
+  }
 
-const { SendWithReliability } = await import("sendra-tx");
-
-const sender = loadKeypair();
-const recipient = new PublicKey(process.env.RECIPIENT_PUBLIC_KEY ?? "11111111111111111111111111111111");
-if (recipient.equals(PublicKey.default)) {
-  throw new Error("Set RECIPIENT_PUBLIC_KEY to a real recipient before running this example");
+  return {
+    type: "params",
+    to: recipient,
+    amount: Math.round(Number(process.env.TRANSFER_SOL ?? "0.001") * LAMPORTS_PER_SOL),
+  };
 }
 
-const signer: Signer = {
-  publicKey: sender.publicKey,
-  async signTransaction(tx) {
-    tx.sign([sender]);
-    return tx;
-  },
-};
+export function createOptions(maxRetries = Number(process.env.MAX_RETRIES ?? "4")): SendraOptions {
+  return {
+    maxRetries,
+    logger: printRecoveryEvent,
+  };
+}
 
-const params: SendraParams = {
-  type: "params",
-  to: recipient,
-  amount: Math.round(Number(process.env.TRANSFER_SOL ?? "0.001") * LAMPORTS_PER_SOL),
-};
+export async function main() {
+  const pool = devnetRpcPool();
+  if (pool.length < 2) {
+    throw new Error("Configure at least two SENDRA_DEVNET_URL_* values; one can be intentionally unavailable");
+  }
 
-const options: SendraOptions = {
-  maxRetries: Number(process.env.MAX_RETRIES ?? "4"),
-  logger: printRecoveryEvent,
-};
+  console.log("Failure recovery RPC pool:");
+  pool.forEach((url, index) => console.log(`${index + 1}. ${url}`));
+  console.log("The first URL may be down; Sendra should route to a healthy endpoint.");
 
-const result = await SendWithReliability(params, signer, options, "devnet");
-console.log("Recovery result:", result);
+  const { SendWithReliability } = await import("sendra-tx");
+  const sender = loadKeypair();
+  const recipient = new PublicKey(process.env.RECIPIENT_PUBLIC_KEY ?? "11111111111111111111111111111111");
+  const result = await SendWithReliability(createTransferParams(recipient), createSigner(sender), createOptions(), "devnet");
+  console.log("Recovery result:", result);
+  return result;
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  await main();
+}
