@@ -23,7 +23,7 @@ export default function Footer() {
                             {["Docs", "Contact Us", "Blog", "GitHub", "Careers", "Terms & Conditions", "Privacy Policy"].map(link => (
                                 <a
                                     key={link}
-                                    href={link === "Docs" ? (process.env.NEXT_PUBLIC_DOCS_URL || "http://localhost:3001/docs") : "#"}
+                                    href={link === "Docs" ? (process.env.NEXT_PUBLIC_DOCS_URL || "http://localhost:3001/docs") : link === "GitHub" ? "https://github.com/sarthakNITT/solana-middleware-protocol" : "#"}
                                     className="font-mono text-[12.5px] text-white/70 uppercase tracking-[0.14em] hover:text-white transition-colors duration-200"
                                 >
                                     {link}

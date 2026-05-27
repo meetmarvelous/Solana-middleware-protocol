@@ -31,6 +31,32 @@ interface Tab {
 
 const TABS: Tab[] = [
   {
+    key: "typescript",
+    label: "TypeScript",
+    lang: "typescript",
+    dot: "#3178c6",
+    code: `import { SendWithReliability } from "sendra-tx";
+import { Keypair } from "@solana/web3.js";
+
+const signer = Keypair.generate();
+
+await SendWithReliability(
+  {
+    from: signer.publicKey,
+    to: "DrxQyFuqPdnyetjQuZhWiVyQiNhdnbPybPynpdkn1mQa",
+    amount: 1000,
+  },
+  {
+    publicKey: signer.publicKey,
+    signTransaction: async (tx) => {
+      tx.sign([signer]);
+      return tx;
+    },
+  },
+  { maxRetries: 3 }
+);`,
+  },
+  {
     key: "rust",
     label: "Rust",
     lang: "rust",
@@ -61,32 +87,6 @@ async fn main() {
     };
     SendWithReliability(params, signer, options).await;
 };`,
-  },
-  {
-    key: "typescript",
-    label: "TypeScript",
-    lang: "typescript",
-    dot: "#3178c6",
-    code: `import { SendWithReliability } from "sendra-tx";
-import { Keypair } from "@solana/web3.js";
-
-const signer = Keypair.generate();
-
-await SendWithReliability(
-  {
-    from: signer.publicKey,
-    to: "DrxQyFuqPdnyetjQuZhWiVyQiNhdnbPybPynpdkn1mQa",
-    amount: 1000,
-  },
-  {
-    publicKey: signer.publicKey,
-    signTransaction: async (tx) => {
-      tx.sign([signer]);
-      return tx;
-    },
-  },
-  { maxRetries: 3 }
-);`,
   },
   {
     key: "python",
@@ -264,6 +264,9 @@ export function CodeSnippetTabs() {
                     }}
                   />
                   {tab.label}
+                  {['rust', 'python', 'go', 'Go'].includes(tab.key) && (
+                    <span className="ml-1 bg-gray-800 text-xs text-white px-1.5 py-0.5 rounded-full opacity-80">Coming Soon</span>
+                  )}
                 </span>
                 {isActive && (
                   <motion.div
