@@ -31,7 +31,7 @@ export default function CTABanner() {
                                 Ready to stop losing transactions?
                             </h2>
                             <div className="flex flex-col sm:flex-row items-center gap-3">
-                                <Link href="/demo">
+                                <Link href={process.env.NEXT_PUBLIC_PACKAGE_URL || "https://www.npmjs.com/package/sendra-tx"}>
                                     <motion.button
                                         whileHover={{ scale: 1.04 }}
                                         whileTap={{ scale: 0.98 }}
@@ -40,17 +40,19 @@ export default function CTABanner() {
                                         Start Building
                                     </motion.button>
                                 </Link>
-                                <motion.button
-                                    whileHover={{ scale: 1.04 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="px-7 py-3 text-white/80 font-semibold text-[12px] tracking-[0.12em] uppercase rounded transition-colors hover:text-white"
-                                    style={{
-                                        background: "rgba(255,255,255,0.08)",
-                                        border: "1px solid rgba(255,255,255,0.12)",
-                                    }}
-                                >
-                                    Book a Call
-                                </motion.button>
+                                <Link href="https://mail.google.com/mail/?view=cm&fs=1&to=sarthakkarodework@gmail.com&su=booking%20sendra" target="_blank" rel="noopener noreferrer">
+                                    <motion.button
+                                        whileHover={{ scale: 1.04 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        className="px-7 py-3 text-white/80 font-semibold text-[12px] tracking-[0.12em] uppercase rounded transition-colors hover:text-white"
+                                        style={{
+                                            background: "rgba(255,255,255,0.08)",
+                                            border: "1px solid rgba(255,255,255,0.12)",
+                                        }}
+                                    >
+                                        Book a Call
+                                    </motion.button>
+                                </Link>
                             </div>
                         </div>
                     </motion.div>

@@ -1,6 +1,6 @@
 {
   "name": "sendra-tx",
-  "version": "0.1.8",
+  "version": "1.0.0",
   "description": "Solana transaction reliability layer — automatic RPC routing, fee optimization, simulation, and retry engine",
   "author": "Sarthak Karode",
   "license": "MIT",

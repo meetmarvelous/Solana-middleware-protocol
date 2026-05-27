@@ -35,7 +35,7 @@ export default function Header() {
                         <Link href={process.env.NEXT_PUBLIC_DOCS_URL || "http://localhost:3001/docs"}>
                             <GhostButton size="sm">Read docs</GhostButton>
                         </Link>
-                        <Link href="/demo"><PrimaryButton size="sm">Try Demo</PrimaryButton></Link>
+                        <Link href="/demo"><PrimaryButton size="sm">DASHBOARD</PrimaryButton></Link>
                     </div>
                 </nav>
             </header>

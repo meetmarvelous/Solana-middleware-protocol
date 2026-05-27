@@ -63,10 +63,10 @@ export default function Hero({ heroRef, heroY, heroOpacity }: { heroRef: any, he
                         transition={{ duration: 0.55, delay: 0.27 }}
                         className="flex flex-col sm:flex-row items-center gap-4 justify-center mb-20"
                     >
-                        <Link href="/demo">
-                            <PrimaryButton size="md">START FOR FREE</PrimaryButton>
+                        <Link href={process.env.NEXT_PUBLIC_PACKAGE_URL || "https://www.npmjs.com/package/sendra-tx"}>
+                            <PrimaryButton size="md">TRY SDK</PrimaryButton>
                         </Link>
-                        <GhostButton size="md">BOOK A DEMO</GhostButton>
+                        <Link href="https://mail.google.com/mail/?view=cm&fs=1&to=sarthakkarodework@gmail.com&su=booking%20sendra" target="_blank" rel="noopener noreferrer"><GhostButton size="md">BOOK A DEMO</GhostButton></Link>
                     </motion.div>
 
                     <motion.div
