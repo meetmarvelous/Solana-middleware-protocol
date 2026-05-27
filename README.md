@@ -1,148 +1,38 @@
+<div align="center">
+
+<img src="https://sendratx.vercel.app/logo.png" alt="Sendra" height="60" />
+
 # Sendra
 
-[![npm package](https://img.shields.io/npm/v/sendra-tx.svg?logo=npm&logoColor=fff&label=npm&color=limegreen)](https://www.npmjs.com/package/sendra-tx)
+**The execution reliability layer for Solana.**
 
-Transactions that don’t fail.
+Sendra ensures your transactions land — handling RPC routing, fee optimization, simulation, and retries so your application doesn't have to.
 
-Reliable transaction execution layer for Solana.
+[![npm](https://img.shields.io/npm/v/sendra-tx.svg?logo=npm&logoColor=fff&label=npm&color=limegreen)](https://www.npmjs.com/package/sendra-tx)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Built for Solana](https://img.shields.io/badge/Built%20for-Solana-9945FF)](https://solana.com)
 
-![Sendra Dashboard](./apps/web/public/dashboard.png)
+[**Dashboard**](https://sendratx.vercel.app) · [**Docs**](https://sendratxdocs.vercel.app/docs) · [**npm**](https://www.npmjs.com/package/sendra-tx)
 
----
-
-## Quick Links
-
-- [npm package](https://www.npmjs.com/package/sendra-tx)
+</div>
 
 ---
 
-## Installation
+## The Problem
+
+On Solana, a successful RPC submission is only the first step. Between submission and finalization, a transaction must survive the gossip network, pass QUIC-based TPU flow control, and be included in a block before its 60-second blockhash expires.
+
+Most developers hit this and build their own retry loops — **for every project, from scratch.**
+
+Sendra closes this execution gap once, so you never have to again.
+
+---
+
+## Install
 
 ```bash
 npm install sendra-tx @solana/web3.js
 ```
-
----
-
-## What is Sendra?
-
-Sendra is a developer-focused SDK that ensures Solana transactions are executed reliably. Instead of just sending a transaction and hoping it lands, Sendra manages the full lifecycle — from construction to confirmation — handling failures, retries, and network issues automatically.
-
----
-
-## Why not build this yourself?
-
-You can build parts of this yourself — retry logic, RPC fallback, fee tuning.
-
-But in production, reliability is not one problem — it’s multiple interacting problems:
-
-- dynamic network conditions
-- RPC instability
-- fee competitiveness
-- blockhash expiry timing
-
-Handling all of this together, consistently, is complex and error-prone.
-
-Sendra provides this as a single, reliable execution layer — so you don’t have to rebuild it for every project.
-
----
-
-## Problem
-
-Solana transactions often fail due to:
-
-- RPC node failures or latency
-- Network congestion
-- Incorrect or insufficient priority fees
-- Stale blockhashes
-
-Developers typically need to build their own:
-
-- Retry logic
-- RPC failover systems
-- Fee estimation mechanisms
-- Monitoring loops
-
-This is complex, error-prone, and repetitive.
-
----
-
-## Who is this for?
-
-- dApp developers (DeFi, NFTs, payments)
-- Trading bots and automation systems
-- Backend services interacting with Solana
-- Any system where transaction reliability matters
-
-If your application depends on transactions landing successfully, Sendra is built for you.
-
----
-
-## When should you use Sendra?
-
-Use Sendra when:
-- your transactions fail intermittently
-- you rely on user-triggered actions (swap, mint, transfer)
-- you need higher success rates in production
-- you don’t want to build custom retry + infra logic
-
-If reliability matters, Sendra should be part of your stack.
-
----
-
-## Solution
-
-Sendra provides a single SDK function that handles everything:
-
-- Smart RPC routing (fastest node selection)
-- Dynamic fee optimization
-- Pre-flight simulation
-- Automatic retries with fresh blockhash
-- Transaction monitoring and confirmation
-
-Instead of:
-```text
-write custom retry + routing + fee logic
-```
-
-You just do:
-```typescript
-sendWithReliability(...)
-```
-
----
-
-## Example Use Case
-
-A user clicks “Swap” in your dApp.
-
-Without Sendra:
-
-- Transaction may fail silently
-- You need manual retries
-- Users get poor experience
-
-With Sendra:
-
-- Transaction is simulated before sending
-- If it fails, it retries with better conditions
-- User gets a confirmed transaction without manual intervention
-
----
-
-## Without vs With Sendra
-
-Without Sendra:
-- Fire-and-forget transaction
-- No retry strategy
-- RPC dependency
-- Silent failures
-
-With Sendra:
-- Adaptive execution pipeline
-- Automatic retries with better conditions
-- RPC failover
-- Higher success rate
 
 ---
 
@@ -153,110 +43,69 @@ import { SendWithReliability } from "sendra-tx";
 
 const result = await SendWithReliability(
   {
-    receiver: "RECEIVER_PUBLIC_KEY",
-    amount: 1000,
+    type: "params",
+    instructions,
+    payer: sender,
   },
-  signer,
-  { maxRetries: 3 }
+  wallet,
+  {
+    maxRetries: 10,
+    commitment: "confirmed",
+    logger: (e) => console.log(`[Sendra] ${e.step}: ${e.message}`),
+  }
 );
 
-console.log(result.signature);
+if (result.success) {
+  console.log(`Landed in ${result.attempts} attempt(s). Sig: ${result.signature}`);
+}
 ```
 
-That’s it — Sendra handles routing, retries, and optimization automatically.
+That's it. Sendra handles routing, simulation, fee optimization, and retries automatically.
 
 ---
 
-## Usage
+## How It Works
 
-```typescript
-import { SendWithReliability } from "sendra-tx";
+Every transaction goes through a deterministic 6-stage pipeline:
 
-const result = await SendWithReliability(
-  {
-    receiver: "RECEIVER_PUBLIC_KEY",
-    amount: 1000,
-  },
-  signer,
-  { maxRetries: 3 }
-);
-
-console.log(result);
+```
+① Select RPC      →  Probe endpoints, pick the fastest node closest to the network tip
+② Build Tx        →  Construct payload with fresh blockhash and correct account refs
+③ Optimize Fees   →  Compute ideal priority fee from live account contention data
+④ Simulate        →  Pre-flight check against live chain state — catch failures before they cost you
+⑤ Send & Confirm  →  Broadcast and monitor until on-chain confirmation
+⑥ Auto-Retry      →  On failure: new blockhash, recalibrated fee, re-routed RPC — automatically
 ```
 
-### Using Pre-built Transactions (Swap, Mint, etc.)
+---
+
+## Works With Pre-built Transactions
+
+Sendra wraps any transaction — swaps, mints, DeFi interactions, custom programs:
 
 ```typescript
 const result = await SendWithReliability(
   {
     type: "built",
     serializedTx: false,
-    transaction: versionedTransaction,
+    transaction: versionedTransaction, // your Jupiter swap, Metaplex mint, etc.
   },
   signer,
   { maxRetries: 3 }
 );
 ```
 
-Works with swaps, minting, and any program interactions.
-
 ---
 
-## Real Transaction Proof
+## Signer Support
 
-> [!NOTE]
-> **Execution Simulation / CLI Output**
-
-![Sendra SDK Execution Logs](./apps/web/public/sdkLogs.png)
-
-Tested on Solana Devnet with successful executions using Sendra.
-
-Example transactions:
-1. [4eRS2VFeMKa3VS...](https://explorer.solana.com/tx/4eRS2VFeMKa3VSXcicKuMzWwPofFPk53YU4hJvWvjho3Ce9amNgQ6RMvrbH55dsr1557PdABRZ5zfxw6M8P96DMB?cluster=devnet)
-2. [4xWw62RfjLomaY...](https://explorer.solana.com/tx/4xWw62RfjLomaYnfpxgoLjHkoP3JENg7a3R1iH3Cu3xzu6847XXimbnsTw5J2DJREFnnxqbuE4TZXLtx1eod9MD1?cluster=devnet)
-3. [5ofe726Z3DhSGi...](https://explorer.solana.com/tx/5ofe726Z3DhSGik6w62XZRDU4dgjeeiaSzTQzUDKoLSubJ7taYiGXZKMbL6S1mqFYqTuDd6Ur6LW49fMUiYxue1X?cluster=devnet)
-
-Sendra handled:
-- **RPC selection**
-- **Fee optimization**
-- **Retry on failure**
-- **Final confirmation**
-
-This is a real transaction executed using the SDK (not simulated logs).
-These transactions were executed under real network conditions including RPC variability and congestion.
-
----
-
-## Execution Metrics
-
-In our test transactions:
-- Attempts: 1–2 (with retry when needed)
-- Confirmation time: ~2–6 seconds
-- Improved transaction reliability under unstable network conditions
-
-Comparison:
-- Normal transaction: may fail or get dropped under congestion
-- Sendra: adapts (retry + fee + RPC switch) and lands successfully
-
----
-
-## Signer
-
-Sendra requires a signer to sign transactions.
-
-### Wallet Adapter (Recommended)
-
-Works directly with Phantom, Solflare, Backpack, etc.
+Works with wallets and backend keypairs alike:
 
 ```typescript
+// Wallet adapter (Phantom, Backpack, Solflare)
 const signer = wallet;
-```
 
----
-
-### Backend Keypair
-
-```typescript
+// Backend / server-side keypair
 const signer = {
   publicKey: keypair.publicKey,
   signTransaction: async (tx) => {
@@ -266,137 +115,101 @@ const signer = {
 };
 ```
 
----
-
-## How it Works
-
-1. Select fastest RPC
-2. Build transaction
-3. Optimize priority fee
-4. Simulate transaction
-5. Sign transaction
-6. Send to network
-7. Monitor confirmation
-8. Retry with new blockhash if needed
+Non-custodial by design — Sendra never touches your private keys.
 
 ---
 
-## Architecture Diagram
+## Response
 
-![Sendra Architecture Diagram](./apps/web/public/archi.png)
-
-## Architecture
-
-Sendra is built as a modular execution pipeline:
-
-- Router → selects best RPC
-- Tx Builder → constructs or rebuilds transactions
-- Fee Optimizer → sets competitive priority fee
-- Simulator → checks for failures before sending
-- RPC Client → broadcasts transaction
-- Logger → tracks status and retries
-
-All components work together to ensure reliable execution.
-
----
-
-## Features
-
-- Smart RPC failover
-- Dynamic fee optimization
-- Pre-flight simulation
-- Automatic retry engine
-- Transaction confirmation monitoring
-- Modular architecture
-
----
-
-## Response Format
-
-```json
+```typescript
 {
-  "status": "success" | "failed",
-  "signature": "string",
-  "attempts": number
+  success: boolean;
+  signature: string;
+  attempts: number;
+  error?: string;
 }
 ```
 
 ---
 
-## Demo
+## Real Transactions on Devnet
 
-Run a demo script:
+Tested under real network conditions — RPC variability, congestion, and blockhash expiry:
 
-```bash
-bun run demo.ts
+| # | Transaction | Handled by Sendra |
+|---|-------------|-------------------|
+| 1 | [4eRS2VFe...](https://explorer.solana.com/tx/4eRS2VFeMKa3VSXcicKuMzWwPofFPk53YU4hJvWvjho3Ce9amNgQ6RMvrbH55dsr1557PdABRZ5zfxw6M8P96DMB?cluster=devnet) | RPC selection + fee optimization + confirmation |
+| 2 | [4xWw62Rf...](https://explorer.solana.com/tx/4xWw62RfjLomaYnfpxgoLjHkoP3JENg7a3R1iH3Cu3xzu6847XXimbnsTw5J2DJREFnnxqbuE4TZXLtx1eod9MD1?cluster=devnet) | Retry with fresh blockhash + re-route |
+| 3 | [5ofe726Z...](https://explorer.solana.com/tx/5ofe726Z3DhSGik6w62XZRDU4dgjeeiaSzTQzUDKoLSubJ7taYiGXZKMbL6S1mqFYqTuDd6Ur6LW49fMUiYxue1X?cluster=devnet) | Fee escalation + confirmed |
+
+---
+
+## Architecture
+
+Sendra is a Turborepo monorepo with fully modular packages — swap, extend, or replace any layer independently:
+
 ```
-
----
-
-## Try it now
-
-Integrate Sendra in your project and test it under real network conditions.
-
-If you're building on Solana, this can immediately improve your transaction reliability.
-
----
-
-## Project Structure
-
-```text
 packages/
-  sdk/            # Public SDK entry
-  core/           # Orchestration logic
-  router/         # RPC selection
-  fee-optimizer/  # Fee logic
-  simulator/      # Pre-flight checks
-  rpc-client/     # Send + status
-  tx-builder/     # Build/rebuild tx
+├── sdk/            # Public entry point — SendWithReliability()
+├── core/           # Execution orchestrator and state machine
+├── router/         # RPC probe, selection, and failover
+├── fee-optimizer/  # Real-time priority fee calculation
+├── simulator/      # Pre-flight transaction simulation
+├── rpc-client/     # Broadcast and confirmation polling
+├── tx-builder/     # Build and rebuild transactions
+└── logger/         # Structured execution traces
+
+apps/
+├── dashboard/      # Real-time monitoring dashboard
+└── docs/           # Documentation site
 ```
+
+---
+
+## Who This Is For
+
+- **dApp developers** — swaps, mints, transfers where failures hurt UX
+- **Trading bots** — automated execution that can't afford silent drops
+- **Backend services** — server-side Solana interactions with no manual retry logic
+- **DeFi protocols** — high-stakes execution where every transaction counts
+
+---
+
+## Roadmap
+
+- [x] TypeScript SDK
+- [x] RPC routing and failover
+- [x] Dynamic fee optimization
+- [x] Pre-flight simulation
+- [x] Auto-retry with blockhash refresh
+- [x] Real-time dashboard
+- [ ] Rust SDK
+- [ ] Python SDK
+- [ ] Go SDK
+- [ ] Mainnet execution benchmarks
+- [ ] Advanced execution analytics
 
 ---
 
 ## Contributing
 
-### Setup
-
 ```bash
-git clone https://github.com/sarthakNITT/Solana-middleware-protocol
-cd Solana-middleware-protocol
+git clone https://github.com/sarthakNITT/solana-middleware-protocol
+cd solana-middleware-protocol
 bun install
+bun run dev
 ```
 
-### Run locally
-
-```bash
-npm run dev
-```
-
-### Guidelines
-
-- Keep packages modular
-- Avoid tight coupling between packages
-- Add shared types in `@repo/types`
-- Write reusable functions
-- Test flows before submitting PR
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. Keep packages modular, add shared types in `@repo/types`, test flows before submitting PRs.
 
 ---
 
-## Current Status
+## License
 
-- Optimized for standard transactions via params input
-- Supports pre-built transactions (swap, mint, etc.)
-- Native support for all transaction types is actively expanding
+MIT — see [LICENSE](LICENSE)
 
 ---
 
-## Vision
-
-Sendra aims to become the execution layer for Solana — ensuring every transaction is not just sent, but successfully landed.
-
----
-
-## Summary
-
-Sendra is not just a transaction sender.
-It is the execution layer for Solana transactions — ensuring they land reliably under real network conditions.
+<div align="center">
+  <sub>Built for Solana · <a href="https://sendratx.vercel.app">sendratx.vercel.app</a></sub>
+</div>
