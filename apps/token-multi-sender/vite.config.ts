@@ -22,6 +22,9 @@ export default defineConfig(() => {
         '@repo/utils': path.resolve(__dirname, '../../packages/utils/src'),
       },
     },
+    esbuild: {
+      tsconfig: path.resolve(__dirname, './tsconfig.json'),
+    },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
