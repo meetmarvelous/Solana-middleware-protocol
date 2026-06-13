@@ -23,7 +23,14 @@ export default defineConfig(() => {
       },
     },
     esbuild: {
-      tsconfig: path.resolve(__dirname, './tsconfig.json'),
+      tsconfigRaw: {
+        compilerOptions: {
+          target: 'es2022',
+          experimentalDecorators: true,
+          useDefineForClassFields: false,
+          jsx: 'react-jsx'
+        }
+      }
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
