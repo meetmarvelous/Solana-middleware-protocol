@@ -1,0 +1,48 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "module": "ESNext",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "allowJs": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "@repo/core": ["../../packages/core/src/index.ts"],
+      "@repo/core/*": ["../../packages/core/src/*"],
+      "@repo/types": ["../../packages/types/src/index.ts"],
+      "@repo/types/*": ["../../packages/types/src/*"],
+      "@repo/router": ["../../packages/router/src/index.ts"],
+      "@repo/router/*": ["../../packages/router/src/*"],
+      "@repo/simulator": ["../../packages/simulator/src/index.ts"],
+      "@repo/simulator/*": ["../../packages/simulator/src/*"],
+      "@repo/rpc-client": ["../../packages/rpc-client/src/index.ts"],
+      "@repo/rpc-client/*": ["../../packages/rpc-client/src/*"],
+      "@repo/tx-builder": ["../../packages/tx-builder/src/index.ts"],
+      "@repo/tx-builder/*": ["../../packages/tx-builder/src/*"],
+      "@repo/fee-optimizer": ["../../packages/fee-optimizer/src/index.ts"],
+      "@repo/fee-optimizer/*": ["../../packages/fee-optimizer/src/*"],
+      "@repo/logger": ["../../packages/logger/src/index.ts"],
+      "@repo/logger/*": ["../../packages/logger/src/*"],
+      "@repo/retry-engine": ["../../packages/retry-engine/src/index.ts"],
+      "@repo/retry-engine/*": ["../../packages/retry-engine/src/*"],
+      "@repo/config": ["../../packages/config/src/index.ts"],
+      "@repo/config/*": ["../../packages/config/src/*"],
+      "@repo/utils": ["../../packages/utils/src/index.ts"],
+      "@repo/utils/*": ["../../packages/utils/src/*"]
+    },
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  }
+}

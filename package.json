@@ -31,5 +31,9 @@
   "overrides": {
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2"
+  },
+  "dependencies": {
+    "@repo/typescript-config": "file:packages/typescript-config",
+    "@solana/web3.js": "^1.98.4"
   }
 }
